@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENRI Tennis Academy · Рига</title>
+<meta name="description" content="ENRI — теннисная академия и сеть кортов в Риге. Теннис, сквош, гольф и фитнес. Тренировки, школы и онлайн-бронирование кортов.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0e2235;
+    --navy-soft:#1b3850;
+    --ink:#14202b;
+    --paper:#ffffff;
+    --cream:#f6f3ee;
+    --cream-2:#efeae1;
+    --clay:#bd5d36;
+    --clay-deep:#a64c28;
+    --sea:#2c7a72;
+    --line:rgba(14,34,53,.12);
+    --muted:#5d6b75;
+    --max:1240px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo',system-ui,sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+  .serif{font-family:'Fraunces',Georgia,serif}
+  .eyebrow{
+    display:inline-block;font-size:12px;font-weight:700;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--clay);
+  }
+  .eyebrow.light{color:rgba(255,255,255,.8)}
+  h1,h2,h3,h4{line-height:1.08;letter-spacing:-.01em;font-weight:700}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+    padding:15px 30px;border-radius:2px;font-weight:600;font-size:14px;
+    letter-spacing:.04em;text-transform:uppercase;border:1px solid transparent;
+    transition:all .25s ease;
+  }
+  .btn-clay{background:var(--clay);color:#fff}
+  .btn-clay:hover{background:var(--clay-deep)}
+  .btn-outline{background:transparent;border-color:currentColor;color:var(--navy)}
+  .btn-outline:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .btn-outline.light{color:#fff}
+  .btn-outline.light:hover{background:#fff;color:var(--navy)}
+
+  /* ---------- TOP / HEADER ---------- */
+  .topbar{background:var(--navy);color:rgba(255,255,255,.85);font-size:13px}
+  .topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:40px}
+  .topbar a{opacity:.85;transition:opacity .2s}
+  .topbar a:hover{opacity:1}
+  .topbar .langs{display:flex;gap:14px;letter-spacing:.05em}
+  .topbar .langs b{color:#fff}
+
+  header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:80px}
+  .logo{display:flex;align-items:center;gap:13px}
+  .logo .mark{width:42px;height:42px;border:2px solid var(--navy);display:grid;place-items:center;
+    font-family:'Fraunces';font-weight:600;font-size:22px;color:var(--navy)}
+  .logo .txt b{display:block;font-weight:800;font-size:19px;letter-spacing:.04em;color:var(--navy);line-height:1}
+  .logo .txt span{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+  .nav-links{display:flex;gap:32px;font-size:14px;font-weight:600;letter-spacing:.02em}
+  .nav-links a{color:var(--navy);position:relative;padding:6px 0}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--clay);transition:width .25s}
+  .nav-links a:hover::after{width:100%}
+  .nav-right{display:flex;align-items:center;gap:18px}
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+  .burger span{width:24px;height:2px;background:var(--navy);border-radius:2px}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;min-height:88vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;z-index:0}
+  .hero-bg .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero-bg .vign{position:absolute;inset:0;background:
+    linear-gradient(180deg,rgba(8,22,38,.68) 0%,rgba(8,22,38,.40) 35%,rgba(8,22,38,.55) 62%,rgba(8,22,38,.93) 100%)}
+  .hero-inner{position:relative;z-index:2;padding:0 0 78px;max-width:760px}
+  .hero h1{font-size:clamp(44px,7vw,86px);font-weight:600;margin:18px 0 22px}
+  .hero h1 i{font-style:italic;color:#fff}
+  .hero p{font-size:19px;max-width:540px;color:rgba(255,255,255,.92);margin-bottom:34px;font-weight:400}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
+  .hero-meta{position:absolute;right:28px;bottom:78px;z-index:2;text-align:right;display:none}
+
+  .ticker{background:var(--navy);color:#fff}
+  .ticker .wrap{display:flex;justify-content:space-between;gap:24px;padding:30px 28px;flex-wrap:wrap}
+  .ticker .it{display:flex;flex-direction:column;gap:2px}
+  .ticker .it b{font-family:'Fraunces';font-size:34px;font-weight:500;line-height:1}
+  .ticker .it span{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+
+  /* ---------- INTRO ---------- */
+  .intro{padding:110px 0}
+  .intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .intro h2{font-size:clamp(32px,4.4vw,52px);font-weight:500;margin:20px 0 24px}
+  .intro p{color:var(--muted);font-size:17px;margin-bottom:18px}
+  .intro .sig{margin-top:28px;font-family:'Fraunces';font-style:italic;font-size:20px;color:var(--navy)}
+  .intro-img{position:relative;aspect-ratio:4/5;border-radius:3px;overflow:hidden;
+    background:#0e2235;box-shadow:0 30px 70px rgba(14,34,53,.18)}
+  .intro-img .cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .intro-img .cap{position:absolute;left:24px;bottom:24px;background:rgba(255,255,255,.94);
+    padding:14px 18px;border-radius:2px}
+  .intro-img .cap b{display:block;font-size:15px;color:var(--navy)}
+  .intro-img .cap span{font-size:13px;color:var(--muted)}
+
+  /* ---------- PROGRAMS ---------- */
+  .programs{background:var(--cream);padding:110px 0}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 56px}
+  .sec-head h2{font-size:clamp(32px,4.4vw,52px);font-weight:500;margin:16px 0 14px}
+  .sec-head p{color:var(--muted);font-size:17px}
+  .prog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .prog{background:var(--paper);padding:38px 30px;transition:background .3s;position:relative}
+  .prog:hover{background:#fff}
+  .prog .ph{aspect-ratio:1/.7;border-radius:2px;margin-bottom:24px;position:relative;overflow:hidden}
+  .prog .ph.t{background:linear-gradient(150deg,#bd6840,#8f4527)}
+  .prog .ph.s{background:linear-gradient(150deg,#2c7a72,#19514b)}
+  .prog .ph.g{background:linear-gradient(150deg,#3a6f4a,#244830)}
+  .prog .ph.f{background:linear-gradient(150deg,#2f6f93,#1c4763)}
+  .prog .ph svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+  .prog h3{font-size:23px;font-weight:600;color:var(--navy);margin-bottom:10px}
+  .prog p{color:var(--muted);font-size:14.5px;margin-bottom:20px;min-height:64px}
+  .prog .price{font-size:14px;font-weight:700;color:var(--clay);letter-spacing:.03em;
+    display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+  .prog .price span{color:var(--navy);font-weight:600}
+  .prog .price .arr{color:var(--clay)}
+
+  /* ---------- FACILITIES / LOCATIONS ---------- */
+  .facilities{padding:110px 0}
+  .loc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:50px}
+  .loc{position:relative;border-radius:3px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;color:#fff}
+  .loc .bg{position:absolute;inset:0;z-index:0}
+  .loc:nth-child(1) .bg{background:linear-gradient(160deg,#2f6f93,#0e2235)}
+  .loc:nth-child(2) .bg{background:linear-gradient(160deg,#bd6840,#5e2f1a)}
+  .loc:nth-child(3) .bg{background:linear-gradient(160deg,#2c7a72,#11302c)}
+  .loc:nth-child(4) .bg{background:linear-gradient(160deg,#3a6f4a,#15281a)}
+  .loc .bg svg{position:absolute;inset:0;width:100%;height:100%;opacity:.4}
+  .loc .bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .loc .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(8,22,38,.82));z-index:1}
+  .loc .body{position:relative;z-index:2;padding:30px}
+  .loc .num{font-family:'Fraunces';font-size:15px;opacity:.7;letter-spacing:.1em}
+  .loc h4{font-size:26px;font-weight:600;margin:6px 0 6px}
+  .loc .addr{font-size:14px;opacity:.85;margin-bottom:14px}
+  .loc .tags{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    padding:5px 12px;border:1px solid rgba(255,255,255,.4);border-radius:2px}
+
+  /* ---------- BOOKING ---------- */
+  .booking{background:var(--navy);color:#fff;padding:110px 0}
+  .booking-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+  .booking h2{font-size:clamp(32px,4.4vw,50px);font-weight:500;margin:18px 0 20px}
+  .booking p.lead{color:rgba(255,255,255,.8);font-size:17px;margin-bottom:30px}
+  .booking ul{list-style:none;display:flex;flex-direction:column;gap:15px}
+  .booking li{display:flex;gap:14px;align-items:flex-start;font-size:15.5px;color:rgba(255,255,255,.92)}
+  .check{width:24px;height:24px;border:1px solid var(--clay);color:var(--clay);border-radius:50%;
+    display:grid;place-items:center;flex-shrink:0;font-size:12px;margin-top:3px}
+  .widget{background:#fff;color:var(--ink);border-radius:4px;padding:30px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+  .widget .wh{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+  .widget .wh b{font-size:17px;color:var(--navy)}
+  .widget .wh .live{font-size:12px;color:var(--sea);font-weight:600;display:flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--sea)}
+  .days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px}
+  .day{text-align:center;padding:11px 0;border-radius:2px;border:1px solid var(--line);font-size:14px;
+    font-weight:600;color:var(--navy);cursor:pointer;transition:.2s}
+  .day small{display:block;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.08em;margin-bottom:3px}
+  .day.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .day.active small{color:rgba(255,255,255,.7)}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .slot{padding:12px 0;text-align:center;border-radius:2px;font-size:14px;font-weight:600;cursor:pointer;
+    border:1px solid var(--line);color:var(--navy);transition:.2s}
+  .slot:hover:not(.busy){border-color:var(--clay);color:var(--clay)}
+  .slot.busy{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+  .slot.sel{background:var(--clay);color:#fff;border-color:var(--clay)}
+  .widget .wbtn{width:100%;justify-content:center;margin-top:22px}
+
+  /* ---------- COACHES ---------- */
+  .coaches{padding:110px 0;background:var(--cream)}
+  .coach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:50px}
+  .coach{background:#fff;border:1px solid var(--line);border-radius:3px;overflow:hidden;transition:transform .3s,box-shadow .3s}
+  .coach:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(14,34,53,.14)}
+  .coach .ph{aspect-ratio:3/2.6;position:relative;display:grid;place-items:center;
+    background:linear-gradient(160deg,#284a63,#0e2235)}
+  .coach .ph .ini{font-family:'Fraunces';font-size:60px;color:rgba(255,255,255,.35)}
+  .coach .ci{padding:24px 26px}
+  .coach h4{font-size:21px;font-weight:600;color:var(--navy)}
+  .coach .role{color:var(--clay);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin:5px 0 10px}
+  .coach .bio{color:var(--muted);font-size:14.5px}
+
+  /* ---------- QUOTE ---------- */
+  .quote{padding:130px 0;text-align:center;position:relative;color:#fff;overflow:hidden}
+  .quote .qbg{position:absolute;inset:0;z-index:0}
+  .quote .qbg img{width:100%;height:100%;object-fit:cover}
+  .quote .qbg::after{content:"";position:absolute;inset:0;background:rgba(8,18,30,.74)}
+  .quote .wrap{max-width:860px;position:relative;z-index:1}
+  .quote blockquote{font-family:'Fraunces';font-style:italic;font-weight:500;font-size:clamp(26px,3.6vw,40px);
+    line-height:1.3;color:#fff}
+  .quote .by{margin-top:26px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700}
+
+  /* ---------- CONTACT ---------- */
+  .contact{background:var(--navy);color:#fff;padding:100px 0}
+  .contact-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:60px;align-items:center}
+  .contact h2{font-size:clamp(30px,4vw,48px);font-weight:500;margin:16px 0 18px}
+  .contact .lead{color:rgba(255,255,255,.8);font-size:17px;margin-bottom:30px;max-width:420px}
+  .ci-list{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .ci-row .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:6px}
+  .ci-row .v{font-size:16px;color:#fff}
+
+  footer{background:#091824;color:rgba(255,255,255,.6);padding:40px 0;font-size:14px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  .foot .logo .mark{border-color:rgba(255,255,255,.5);color:#fff}
+  .foot .logo .txt b{color:#fff}
+
+  .proto{background:var(--cream-2);color:var(--navy);text-align:center;font-size:12px;font-weight:700;
+    padding:9px;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:980px){
+    .nav-links{display:none}
+    .burger{display:flex}
+    .intro-grid{grid-template-columns:1fr;gap:44px}
+    .prog-grid{grid-template-columns:repeat(2,1fr)}
+    .booking-grid{grid-template-columns:1fr;gap:44px}
+    .coach-grid{grid-template-columns:1fr}
+    .contact-grid{grid-template-columns:1fr;gap:40px}
+  }
+  @media(max-width:600px){
+    .topbar .left{display:none}
+    .prog-grid{grid-template-columns:1fr}
+    .loc-grid{grid-template-columns:1fr}
+    .ci-list{grid-template-columns:1fr}
+    .hero{min-height:80vh}
+  }
+</style>
+</head>
+<body>
+
+<div class="proto">Прототип нового сайта · демонстрационная версия для оценки дизайна</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="wrap">
+    <div class="left">📞 +371 26 100 700 · ✉ tennis@enri.lv</div>
+    <div class="langs"><b>RU</b> · LV · EN</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#">
+      <span class="mark">E</span>
+      <span class="txt"><b>ENRI</b><span>Tennis Academy</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#about">Академия</a>
+      <a href="#programs">Программы</a>
+      <a href="#facilities">Клубы</a>
+      <a href="#booking">Бронирование</a>
+      <a href="#coaches">Тренеры</a>
+      <a href="#contact">Контакты</a>
+    </nav>
+    <div class="nav-right">
+      <a href="#booking" class="btn btn-clay">Забронировать</a>
+      <button class="burger" id="burger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <img class="photo" src="img/stock/action1.jpg" alt="Теннис на грунтовом корте">
+    <div class="vign"></div>
+  </div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <span class="eyebrow light">Теннисная академия · Рига, Латвия</span>
+      <h1 class="serif">Где теннис<br>становится <i>стилем жизни</i></h1>
+      <p>Крытые и грунтовые корты, профессиональные тренеры и четыре клуба по всей Риге. Играйте, тренируйтесь и растите вместе с ENRI.</p>
+      <div class="hero-actions">
+        <a href="#booking" class="btn btn-clay">Забронировать корт</a>
+        <a href="#programs" class="btn btn-outline light">Наши программы</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="wrap">
+    <div class="it"><b>4</b><span>клуба в Риге</span></div>
+    <div class="it"><b>20+</b><span>теннисных кортов</span></div>
+    <div class="it"><b>25</b><span>лет на корте</span></div>
+    <div class="it"><b>4</b><span>вида спорта</span></div>
+    <div class="it"><b>24/7</b><span>онлайн-бронирование</span></div>
+  </div>
+</div>
+
+<!-- INTRO / ABOUT -->
+<section class="intro" id="about">
+  <div class="wrap intro-grid">
+    <div>
+      <span class="eyebrow">Об академии</span>
+      <h2 class="serif">Больше, чем корты —<br>теннисная культура</h2>
+      <p>ENRI — это сеть из четырёх клубов в Риге, где играют и тренируются и начинающие, и профессионалы. Современные крытые корты с покрытием SCHÖPP-Slide, грунтовые площадки и команда сертифицированных тренеров.</p>
+      <p>Мы создаём атмосферу настоящей академии: детские школы, индивидуальные тренировки, спарринги и турниры — всё в одном месте.</p>
+      <div class="sig">«Теннис — это стиль жизни»</div>
+    </div>
+    <div class="intro-img">
+      <img class="cover" src="img/c-5.jpg" alt="Лаундж-зона у грунтовых кортов ENRI">
+      <div class="cap"><b>Merks Viesturdārzs</b><span>Лаундж и террасы у кортов</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMS -->
+<section class="programs" id="programs">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Чем заняться</span>
+      <h2 class="serif">Программы и услуги</h2>
+      <p>От профессионального тенниса до фитнеса и гольф-симуляторов — выбирайте формат и бронируйте онлайн.</p>
+    </div>
+    <div class="prog-grid">
+      <div class="prog">
+        <div class="ph t" style="background-image:url('img/stock/clay1.jpg');background-size:cover;background-position:center"></div>
+        <h3>Теннис</h3>
+        <p>Крытые и открытые грунтовые корты, индивидуальные и групповые тренировки с тренером.</p>
+        <div class="price"><span>от 8 € / час</span><span class="arr">→</span></div>
+      </div>
+      <div class="prog">
+        <div class="ph s" style="background-image:url('img/stock/squash1.jpg');background-size:cover;background-position:center"></div>
+        <h3>Сквош</h3>
+        <p>Четыре профессиональных корта для быстрой и динамичной игры в любую погоду.</p>
+        <div class="price"><span>от 8 € / час</span><span class="arr">→</span></div>
+      </div>
+      <div class="prog">
+        <div class="ph g" style="background-image:url('img/stock/golf1.jpg');background-size:cover;background-position:center"></div>
+        <h3>Гольф</h3>
+        <p>Современные гольф-симуляторы с лучшими полями мира — тренируйтесь круглый год.</p>
+        <div class="price"><span>17 € / час</span><span class="arr">→</span></div>
+      </div>
+      <div class="prog">
+        <div class="ph f" style="background-image:url('img/stock/fitness2.jpg');background-size:cover;background-position:center"></div>
+        <h3>Фитнес</h3>
+        <p>Тренажёрный зал для разминки, восстановления и силовой подготовки к матчам.</p>
+        <div class="price"><span>от 20 € / занятие</span><span class="arr">→</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FACILITIES -->
+<section class="facilities" id="facilities">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Наши клубы</span>
+      <h2 class="serif">Четыре локации в Риге</h2>
+      <p>Выбирайте ближайший клуб — везде современное оборудование, раздевалки и парковка.</p>
+    </div>
+    <div class="loc-grid">
+      <div class="loc">
+        <div class="bg"><img src="img/c-fsr.jpg" alt="TK Kalnciems"></div>
+        <div class="ov"></div>
+        <div class="body">
+          <div class="num">01</div><h4>TK Kalnciems</h4>
+          <div class="addr">Kalnciema iela 207, Rīga</div>
+          <div class="tags"><span class="tag">Теннис</span><span class="tag">Сквош</span><span class="tag">Фитнес</span></div>
+        </div>
+      </div>
+      <div class="loc">
+        <div class="bg"><img src="img/c-dsc04954.jpg" alt="TK Purvciems"></div>
+        <div class="ov"></div>
+        <div class="body">
+          <div class="num">02</div><h4>TK Purvciems</h4>
+          <div class="addr">Stirnu iela 34a, Rīga</div>
+          <div class="tags"><span class="tag">Теннис</span><span class="tag">Грунт</span></div>
+        </div>
+      </div>
+      <div class="loc">
+        <div class="bg"><img src="img/c-4.jpg" alt="TK Vaidavas"></div>
+        <div class="ov"></div>
+        <div class="body">
+          <div class="num">03</div><h4>TK Vaidavas</h4>
+          <div class="addr">Vaidavas iela 4a, Rīga</div>
+          <div class="tags"><span class="tag">Теннис</span><span class="tag">Гольф</span></div>
+        </div>
+      </div>
+      <div class="loc">
+        <div class="bg"><img src="img/c-3.jpg" alt="TK Merks Viesturdārzs"></div>
+        <div class="ov"></div>
+        <div class="body">
+          <div class="num">04</div><h4>TK Merks Viesturdārzs</h4>
+          <div class="addr">Rūpniecības iela 21-1, Rīga</div>
+          <div class="tags"><span class="tag">Теннис</span><span class="tag">Премиум</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="booking" id="booking">
+  <div class="wrap booking-grid">
+    <div>
+      <span class="eyebrow light">Онлайн-бронирование</span>
+      <h2 class="serif">Забронируйте корт<br>за 30 секунд</h2>
+      <p class="lead">Никаких звонков и ожидания. Видите свободное время — выбираете и оплачиваете онлайн.</p>
+      <ul>
+        <li><span class="check">✓</span> Расписание всех кортов в реальном времени</li>
+        <li><span class="check">✓</span> Оплата картой или клубным абонементом</li>
+        <li><span class="check">✓</span> Напоминание и отмена брони в один клик</li>
+        <li><span class="check">✓</span> История игр и любимые корты в личном кабинете</li>
+      </ul>
+    </div>
+    <div class="widget">
+      <div class="wh"><b>TK Kalnciems · Корт 3</b><span class="live"><span class="dot"></span>онлайн</span></div>
+      <div class="days">
+        <div class="day"><small>ПН</small>30</div>
+        <div class="day active"><small>ВТ</small>01</div>
+        <div class="day"><small>СР</small>02</div>
+        <div class="day"><small>ЧТ</small>03</div>
+        <div class="day"><small>ПТ</small>04</div>
+      </div>
+      <div class="slots" id="slots">
+        <div class="slot">08:00</div>
+        <div class="slot busy">09:00</div>
+        <div class="slot">10:00</div>
+        <div class="slot sel">11:00</div>
+        <div class="slot busy">17:00</div>
+        <div class="slot">18:00</div>
+        <div class="slot">19:00</div>
+        <div class="slot busy">20:00</div>
+        <div class="slot">21:00</div>
+      </div>
+      <button class="btn btn-clay wbtn" id="bookBtn">Забронировать · 8 €</button>
+    </div>
+  </div>
+</section>
+
+<!-- COACHES -->
+<section class="coaches" id="coaches">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Команда</span>
+      <h2 class="serif">Наши тренеры</h2>
+      <p>Сертифицированные тренеры для детей и взрослых — индивидуально и в группах.</p>
+    </div>
+    <div class="coach-grid">
+      <div class="coach">
+        <div class="ph" style="background-image:url('img/denis-pavlov_200x200.jpg');background-size:cover;background-position:center top"></div>
+        <div class="ci"><h4>Денис Павлов</h4><div class="role">Старший тренер</div><div class="bio">Индивидуальные и групповые тренировки, постановка техники с нуля.</div></div>
+      </div>
+      <div class="coach">
+        <div class="ph"><span class="ini">GU</span></div>
+        <div class="ci"><h4>Герман Углев</h4><div class="role">Тренер · детская школа</div><div class="bio">Развитие координации и базовых ударов у юных игроков.</div></div>
+      </div>
+      <div class="coach">
+        <div class="ph"><span class="ini">EN</span></div>
+        <div class="ci"><h4>Команда ENRI</h4><div class="role">Сертифицированные тренеры</div><div class="bio">Спарринги, подготовка к турнирам и индивидуальные программы.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+  <div class="qbg"><img src="img/c-hall1.jpg" alt="Теннисный клуб ENRI"></div>
+  <div class="wrap">
+    <span class="eyebrow">Почему ENRI</span>
+    <blockquote>«Лучший корт — тот, что свободен именно тогда, когда вы хотите играть. Мы сделали так, чтобы найти его можно было за полминуты.»</blockquote>
+    <div class="by">Команда ENRI Tennis Academy</div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap contact-grid">
+    <div>
+      <span class="eyebrow light">Свяжитесь с нами</span>
+      <h2 class="serif">Приходите играть</h2>
+      <p class="lead">Запишитесь на пробную тренировку или забронируйте корт прямо сейчас — мы всегда на связи.</p>
+      <a href="#booking" class="btn btn-clay">Забронировать корт</a>
+    </div>
+    <div class="ci-list">
+      <div class="ci-row"><div class="l">Телефон</div><div class="v">+371 26 100 700<br>+371 67 802 208</div></div>
+      <div class="ci-row"><div class="l">E-mail</div><div class="v">tennis@enri.lv</div></div>
+      <div class="ci-row"><div class="l">Главный клуб</div><div class="v">Kalnciema iela 207, Rīga</div></div>
+      <div class="ci-row"><div class="l">Часы работы</div><div class="v">Пн–Вс<br>07:00 – 23:00</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <a class="logo" href="#"><span class="mark">E</span><span class="txt"><b>ENRI</b><span style="color:rgba(255,255,255,.5)">Tennis Academy</span></span></a>
+    <div>© 2026 Теннисная академия ENRI · Рига, Латвия</div>
+    <div style="color:var(--clay)">Прототип · дизайн-демо</div>
+  </div>
+  <div class="wrap" style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.4);line-height:1.6">
+    Демонстрационный прототип. Часть фотографий — иллюстративные (стоковые) и приведены для показа дизайна; в финальной версии они заменяются на реальные фотографии клуба ENRI.
+  </div>
+</footer>
+
+<script>
+  const burger=document.getElementById('burger');
+  burger&&burger.addEventListener('click',()=>{
+    const links=document.querySelector('.nav-links');
+    const open=links.style.display==='flex';
+    links.style.cssText=open?'':'display:flex;position:absolute;top:120px;left:0;right:0;flex-direction:column;gap:0;background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);box-shadow:0 20px 40px rgba(0,0,0,.1)';
+  });
+  document.querySelectorAll('#slots .slot:not(.busy)').forEach(s=>{
+    s.addEventListener('click',()=>{
+      document.querySelectorAll('#slots .slot').forEach(x=>x.classList.remove('sel'));
+      s.classList.add('sel');
+      document.getElementById('bookBtn').textContent='Забронировать '+s.textContent+' · 8 €';
+    });
+  });
+  document.querySelectorAll('.day').forEach(d=>{
+    d.addEventListener('click',()=>{
+      document.querySelectorAll('.day').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+    });
+  });
+  document.getElementById('bookBtn').addEventListener('click',()=>{
+    alert('Это демо-прототип. В рабочей версии здесь будет реальная оплата и подтверждение брони.');
+  });
+</script>
+</body>
+</html>
