@@ -57,14 +57,14 @@
   .btn-outline.light:hover{background:#fff;color:var(--navy)}
 
   /* ---------- TOP / HEADER ---------- */
-  .topbar{background:var(--navy);color:rgba(255,255,255,.85);font-size:13px}
+  .topbar{background:var(--navy);color:rgba(255,255,255,.85);font-size:13px;position:sticky;top:0;z-index:61}
   .topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:40px}
   .topbar a{opacity:.85;transition:opacity .2s}
   .topbar a:hover{opacity:1}
   .topbar .langs{display:flex;gap:14px;letter-spacing:.05em}
   .topbar .langs b{color:#fff}
 
-  header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:40px;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
   .nav{display:flex;align-items:center;justify-content:space-between;height:80px}
   .logo{display:flex;align-items:center;gap:13px}
   .logo .mark{width:42px;height:42px;border:2px solid var(--navy);display:grid;place-items:center;
