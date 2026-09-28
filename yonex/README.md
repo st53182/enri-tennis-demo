@@ -11,8 +11,9 @@ then open http://localhost:5178
 
 ## Deploy
 
-`render.yaml` has a `yonex-baltic-prototype` static service (root `yonex-baltic-prototype`,
-publish path `.`, no build). It is served with `noindex` so search engines skip it.
+Published on GitHub Pages as a copy in the public repo `st53182/enri-tennis-demo`, folder `yonex/`:
+https://st53182.github.io/enri-tennis-demo/yonex/
+To update it, copy this folder over `yonex/` there and push to `main`.
 
 ## Content sources
 
