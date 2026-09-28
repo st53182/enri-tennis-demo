@@ -139,7 +139,7 @@ p{margin:0}
 .pc-img.s-badminton{background:linear-gradient(160deg,#FCF3DF,#FBF8F0)}
 .pc-img svg{height:84%;width:auto}
 .pc-img .rk{transform:rotate(-30deg)}
-.pc-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
+.pc-badges{position:absolute;z-index:1;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
 .pc-body{display:flex;flex-direction:column;gap:6px;padding:14px 14px 16px;flex:1}
 .pc-series{font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .pc-name{font:750 18px/1.12 var(--f-display);font-stretch:88%;text-transform:uppercase}
@@ -149,13 +149,12 @@ p{margin:0}
 .price s{font:400 13px/1 var(--f-body);color:var(--muted);margin-left:6px}
 .stock{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
 
-/* ---------- official product photos ---------- */
-.ph{display:block;height:88%;width:auto;max-width:92%;object-fit:contain;mix-blend-mode:multiply;filter:brightness(1.04) contrast(1.02)}
+/* ---------- official product photos ----------
+   The photo is pinned inside its frame, so a tall or wide picture can never spill out. */
+.ph{position:absolute;inset:0;margin:auto;width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply;filter:brightness(1.04) contrast(1.02)}
 .ph-fb{display:contents}
-.pc-img .ph{height:90%}
-.hero-art .ph{position:relative;height:94%;max-height:460px;transform:rotate(-14deg);transition:transform .4s ease}
+.pc-img,.pdp-stage,.hero-art{overflow:hidden}
+.ri-img,.soon-art{position:relative;overflow:hidden}
+.hero-art .ph{width:92%;height:92%;transform:rotate(-14deg);transition:transform .4s ease}
 .hero-art:hover .ph{transform:rotate(-10deg) translateY(-4px)}
-.pdp-stage .ph{position:relative;height:90%}
-.ri-img .ph{height:90px}
-.soon-art .ph{height:132px}
-@media (max-width:860px){.hero-art .ph{height:290px}}
+.ri-img .ph,.soon-art .ph{width:90%;height:90%}

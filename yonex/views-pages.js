@@ -28,7 +28,7 @@ V.product = function(p){
   <div class="pdp">
     <div class="pdp-gallery">
       <div class="pdp-stage s-${p.sport}">${ART.court(p.sport, p.sport==='tennis'?'rgba(23,120,90,.35)':'rgba(185,122,0,.35)')}${badges(p)}${ART.photo(p, 800, 1000, {strings: str ? 'rgba(12,22,38,.55)' : 'rgba(12,22,38,.12)'})}</div>
-      <p class="pdp-note">${S.lang==='lv'?'Ilustrācija prototipam. Gatavajā vietnē būs produkta foto un 360° skats.':'Prototype illustration. The live site will show product photos and a 360° view.'}</p>
+      <p class="pdp-note">${p.img ? (S.lang==='lv'?'Foto: yonex.com':'Photo: yonex.com') : (S.lang==='lv'?'Ilustrācija prototipam':'Prototype illustration')}</p>
     </div>
     <div class="pdp-info">
       <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip chip-${p.sport}">${t('sport_'+p.sport)}</span><span class="chip chip-line">${esc(p.series)}</span></div>
