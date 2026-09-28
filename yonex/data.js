@@ -1,0 +1,176 @@
+/* Prototype catalogue. Racket specs and photos come from yonex.com; prices, stock and dates are illustrative. */
+window.IMG_BASE = 'https://www.yonex.com/media/catalog/product';
+window.STORES = [
+  { id:'riga', city:'Rīga', country:'LV', name:{lv:'YONEX Baltic salons',en:'YONEX Baltic showroom'}, addr:'Krasta iela 76, Rīga', hours:'P–Pk 10:00–19:00 · S 10:00–16:00', services:['stringing','demo','fitting'], main:true },
+  { id:'riga2', city:'Rīga', country:'LV', name:{lv:'Partneris · Pārdaugava',en:'Partner · Pardaugava'}, addr:'Kalnciema iela 118, Rīga', hours:'P–Sv 08:00–22:00', services:['stringing'] },
+  { id:'tallinn', city:'Tallinn', country:'EE', name:{lv:'Partneris · Tallina',en:'Partner · Tallinn'}, addr:'Tartu mnt 80, Tallinn', hours:'E–R 10:00–19:00 · L 10:00–16:00', services:['stringing','demo'] },
+  { id:'vilnius', city:'Vilnius', country:'LT', name:{lv:'Partneris · Viļņa',en:'Partner · Vilnius'}, addr:'Ukmergės g. 220, Vilnius', hours:'I–V 10:00–19:00 · VI 10:00–15:00', services:['stringing','demo'] }
+];
+
+const BAD_GRIPS = ['G5','G6'], BAD_W = ['3U','4U'], TEN_GRIPS = ['G1','G2','G3','G4'];
+const EU = ['39','40','41','42','43','44','45','46'];
+const APP = ['S','M','L','XL','XXL'];
+
+window.PRODUCTS = [
+  /* ---- badminton rackets (specs and photos: yonex.com) ---- */
+  { id:'astrox-99-pro', sport:'badminton', cat:'rackets', series:'ASTROX', name:'ASTROX 99 PRO', price:249, isNew:true, top:true, img:'/a/l/all_3ax99-p_530-1.png',
+    art:{kind:'racket',c1:'#16181D',c2:'#2FA84F'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:6,riga2:1,tallinn:2,vilnius:1},
+    desc:{lv:'Trešās paaudzes ASTROX 99 uzbrūkošam spēlētājam: galvā smaga, ar volframu rāmī smagākam smašam.',en:'Third-generation ASTROX 99 for attacking players: head heavy, with tungsten in the frame for a heavier smash.'},
+    specs:[['flex','Stiff'],['balance','Head heavy'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / CFR / Tungsten / 2G-Namd FLEX FORCE'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Black / Green']] },
+  { id:'nanoflare-700-pro', sport:'badminton', cat:'rackets', series:'NANOFLARE', name:'NANOFLARE 700 PRO', price:219, isNew:true, img:'/a/l/all_nf-700p_339-1_2.png',
+    art:{kind:'racket',c1:'#3A2A6B',c2:'#6C8CFF'}, opts:{weight:['4U','5U'],grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:4,riga2:1,tallinn:1,vilnius:2},
+    desc:{lv:'Viegla galva un vidēji elastīgs kāts ātrai spēlei pie tīkla un pretuzbrukumiem.',en:'Head-light with a medium shaft for fast net play and counter-attacks.'},
+    specs:[['flex','Medium'],['balance','Head light'],['weightGrip','4U G5–6 · 5U G5–6'],['frame','HM Graphite / Nanometric DR / M40X / EX-HYPER MG'],['tensionRange','4U 20–28 lbs · 5U 19–27 lbs'],['color','Midnight Purple']] },
+  { id:'arcsaber-7-pro', sport:'badminton', cat:'rackets', series:'ARCSABER', name:'ARCSABER 7 PRO', price:209, isNew:true, img:'/a/r/arc7-p.png',
+    art:{kind:'racket',c1:'#7A808A',c2:'#E8D200'}, opts:{weight:['4U'],grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:3,riga2:0,tallinn:1,vilnius:1},
+    desc:{lv:'Līdzsvarota raķete kontrolei: volāns ilgāk paliek uz stīgām, sitienu vieglāk novietot.',en:'Even balance for control: the shuttle stays longer on the strings for easier placement.'},
+    specs:[['flex','Medium'],['balance','Even'],['weightGrip','4U G5–6'],['frame','HM Graphite / Pocketing Booster'],['tensionRange','4U 19–27 lbs'],['color','Gray / Yellow']] },
+  { id:'astrox-77-pro', sport:'badminton', cat:'rackets', series:'ASTROX', name:'ASTROX 77 PRO', price:199, isNew:true, img:'/a/x/ax77-p_.png',
+    art:{kind:'racket',c1:'#F26B21',c2:'#1A1A1A'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:5,riga2:2,tallinn:3,vilnius:2},
+    desc:{lv:'Uzbrukums bez pārslodzes plecam: galvā smaga, bet ar vidēji elastīgu kātu.',en:'Attack without overloading the shoulder: head heavy, medium-flex shaft.'},
+    specs:[['flex','Medium'],['balance','Head heavy'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / Flex Fuse / Tungsten'],['tensionRange','4U 19–27 lbs · 3U 20–28 lbs'],['color','High Orange']] },
+  { id:'astrox-100zz', sport:'badminton', cat:'rackets', series:'ASTROX', name:'ASTROX 100 ZZ', price:259, top:true, img:'/a/s/astrox100zz_kurenai.png',
+    art:{kind:'racket',c1:'#1B2A55',c2:'#C8102E'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:6,riga2:1,tallinn:2,vilnius:0},
+    desc:{lv:'Galvā smagākā ASTROX raķete ar ļoti cietu kātu, lai smašā neko nezaudētu.',en:'The most head-heavy ASTROX with an extra-stiff shaft, so nothing is lost on the smash.'},
+    specs:[['flex','Extra stiff'],['balance','Head heavy'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / Namd / Tungsten / Black Micro Core'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Kurenai']] },
+  { id:'nanoflare-1000z', sport:'badminton', cat:'rackets', series:'NANOFLARE', name:'NANOFLARE 1000 Z', price:259, top:true, img:'/n/a/nanoflare_1000_z.png',
+    art:{kind:'racket',c1:'#F2D100',c2:'#15171C'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:4,riga2:0,tallinn:1,vilnius:2},
+    desc:{lv:'Ātrākā NANOFLARE: viegla galva un ļoti ciets kāts ātrām drive apmaiņām.',en:'The fastest NANOFLARE: head light with an extra-stiff shaft for quick drive exchanges.'},
+    specs:[['flex','Extra stiff'],['balance','Head light'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / Nanometric DR / M40X / EX-HYPER MG'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Lightning Yellow']] },
+  { id:'nanoflare-800-pro', sport:'badminton', cat:'rackets', series:'NANOFLARE', name:'NANOFLARE 800 PRO', price:229, img:'/a/l/all_nf-800p_269-1.png',
+    art:{kind:'racket',c1:'#1E4D3A',c2:'#9FD9B8'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:3,riga2:0,tallinn:0,vilnius:1},
+    desc:{lv:'Ātra rāmja stabilitāte dubultspēlē: viegla galva, ciets kāts.',en:'Fast-frame stability for doubles: head light, stiff shaft.'},
+    specs:[['flex','Stiff'],['balance','Head light'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / M40X / Super HMG / Copper'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Deep Green']] },
+  { id:'astrox-88d-pro', sport:'badminton', cat:'rackets', series:'ASTROX', name:'ASTROX 88 D PRO', price:229, img:'/3/a/3ax88d-p_076-1_02.png',
+    art:{kind:'racket',c1:'#26272C',c2:'#B9BEC6'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:2,riga2:1,tallinn:2,vilnius:1},
+    desc:{lv:'Aizmugurējās līnijas spēlētājam dubultspēlē: smagi sitieni no aizmugures.',en:'For the back-court doubles player: heavy hits from the rear.'},
+    specs:[['flex','Stiff'],['balance','Head heavy'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / CFR / Tungsten'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Black / Silver']] },
+  { id:'arcsaber-11-pro', sport:'badminton', cat:'rackets', series:'ARCSABER', name:'ARCSABER 11 PRO', price:239, img:'/a/r/arc11-p.png',
+    art:{kind:'racket',c1:'#76808F',c2:'#B8322A'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:1,riga2:0,tallinn:0,vilnius:0},
+    desc:{lv:'Klasiska kontroles raķete: līdzsvarota, ar ilgāku volāna noturēšanu uz stīgām.',en:'The classic control racket: even balance and a longer hold of the shuttle.'},
+    specs:[['flex','Stiff'],['balance','Even'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / Pocketing Booster'],['tensionRange','4U 19–27 lbs · 3U 20–28 lbs'],['color','Grayish Pearl']] },
+  { id:'nanoflare-001-feel', sport:'badminton', cat:'rackets', series:'NANOFLARE', name:'NANOFLARE 001 FEEL', price:69, img:'/i/n/int_nf-001f_551-1_02.png',
+    art:{kind:'racket',c1:'#2FA84F',c2:'#F4F6F8'}, opts:{weight:['5U'],grip:['G4','G5']}, stringable:true,
+    stock:{riga:12,riga2:4,tallinn:6,vilnius:5},
+    desc:{lv:'Viegla (5U) un elastīga raķete iesācējiem un hobija spēlei.',en:'Light (5U), flexible racket for beginners and casual play.'},
+    specs:[['flex','Hi-Flex'],['balance','Head light'],['weightGrip','5U G4–5'],['frame','Graphite'],['tensionRange','5U 20–27 lbs'],['color','White / Mint']] },
+
+  /* ---- tennis rackets (specs and photos: yonex.com) ---- */
+  { id:'muse-98', sport:'tennis', cat:'rackets', series:'MUSE', name:'MUSE 98', price:249, isNew:true, top:true, img:'/a/l/all_01mu98_667-1.jpg',
+    art:{kind:'racket',c1:'#C9CED6',c2:'#1A1A1A'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:5,riga2:1,tallinn:2,vilnius:2},
+    desc:{lv:'Jauna YONEX tenisa sērija: 98 in² galva un 16×18 stīgu raksts precīzai, kontrolētai spēlei.',en:'The new YONEX tennis series: 98 in² head and 16×18 pattern for precise, controlled play.'},
+    specs:[['head','98 in² / 632 cm²'],['weight','305 g'],['balance','315 mm'],['pattern','16×18'],['frame','HM Graphite / Servo Filter / VDM'],['tensionRange','20–27 kg'],['color','Pearl Silver']] },
+  { id:'muse-100', sport:'tennis', cat:'rackets', series:'MUSE', name:'MUSE 100', price:249, isNew:true, img:'/a/l/all_01mu100_667-1.jpg',
+    art:{kind:'racket',c1:'#C9CED6',c2:'#1A1A1A'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:4,riga2:1,tallinn:1,vilnius:2},
+    desc:{lv:'Vieglāka MUSE ar 100 in² galvu: vairāk piedošanas un jaudas klubu spēlētājam.',en:'The lighter MUSE with a 100 in² head: more forgiveness and power for club players.'},
+    specs:[['head','100 in² / 645 cm²'],['weight','295 g'],['balance','320 mm'],['pattern','16×18'],['frame','HM Graphite / Servo Filter / VDM'],['tensionRange','20–27 kg'],['color','Pearl Silver']] },
+  { id:'vcore-100', sport:'tennis', cat:'rackets', series:'VCORE', name:'VCORE 100', price:239, isNew:true, top:true, img:'/a/l/all_08vc100_338-1.jpg',
+    art:{kind:'racket',c1:'#B0122B',c2:'#1A1A1A'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:4,riga2:1,tallinn:2,vilnius:3},
+    desc:{lv:'Jaunā VCORE paaudze topspin spēlei: stīgas “ķer” bumbu augstai, smagai trajektorijai.',en:'The new VCORE generation for topspin: the string bed grips the ball for a high, heavy trajectory.'},
+    specs:[['head','100 in² / 645 cm²'],['weight','300 g'],['balance','320 mm'],['pattern','16×19'],['frame','HM Graphite / 2G-Namd FLEX FORCE / Servo Filter / VDM'],['tensionRange','20–27 kg'],['color','Ruby Red']] },
+  { id:'vcore-98', sport:'tennis', cat:'rackets', series:'VCORE', name:'VCORE 98', price:239, isNew:true, img:'/a/l/all_08vc98_338-1.jpg',
+    art:{kind:'racket',c1:'#B0122B',c2:'#1A1A1A'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:2,riga2:0,tallinn:0,vilnius:1},
+    desc:{lv:'Rotācija un precizitāte pieredzējušam spēlētājam.',en:'Spin plus precision for the experienced player.'},
+    specs:[['head','98 in² / 632 cm²'],['weight','305 g'],['balance','315 mm'],['pattern','16×19'],['frame','HM Graphite / 2G-Namd FLEX FORCE / Servo Filter / VDM'],['tensionRange','20–27 kg'],['color','Ruby Red']] },
+  { id:'ezone-100', sport:'tennis', cat:'rackets', series:'EZONE', name:'EZONE 100', price:239, top:true, img:'/a/l/all_08ez100_839-1.jpg',
+    art:{kind:'racket',c1:'#1C4FD6',c2:'#8FD3FF'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:5,riga2:2,tallinn:3,vilnius:2},
+    desc:{lv:'Jaudīga un komfortabla raķete ar lielu “saldo punktu” garām spēlēm.',en:'Powerful, comfortable racket with a big sweet spot for long sessions.'},
+    specs:[['head','100 in² / 645 cm²'],['weight','300 g'],['balance','320 mm'],['pattern','16×19'],['frame','HM Graphite / 2G-Namd SPEED / VDM / Minolon'],['tensionRange','20–27 kg'],['color','Blast Blue']] },
+  { id:'ezone-98', sport:'tennis', cat:'rackets', series:'EZONE', name:'EZONE 98', price:239, img:'/a/l/all_08ez98_839-1.jpg',
+    art:{kind:'racket',c1:'#1747B8',c2:'#E8EEF9'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:3,riga2:0,tallinn:1,vilnius:1},
+    desc:{lv:'Kontrolētāka EZONE versija spēlētājam ar pilnu vēzienu.',en:'The more controlled EZONE for players with a full swing.'},
+    specs:[['head','98 in² / 632 cm²'],['weight','305 g'],['balance','315 mm'],['pattern','16×19'],['frame','HM Graphite / 2G-Namd SPEED / VDM'],['tensionRange','20–27 kg'],['color','Blast Blue']] },
+  { id:'percept-97', sport:'tennis', cat:'rackets', series:'PERCEPT', name:'PERCEPT 97', price:229, img:'/a/l/all_01pe97_472-1_1.png',
+    art:{kind:'racket',c1:'#2D5E4F',c2:'#D7C9A6'}, opts:{grip:TEN_GRIPS}, stringable:true,
+    stock:{riga:2,riga2:0,tallinn:1,vilnius:0},
+    desc:{lv:'Klasiska sajūta un kontrole: elastīgāks rāmis, kas ļauj “just” bumbu.',en:'Classic feel and control: a more flexible frame that lets you feel the ball.'},
+    specs:[['head','97 in² / 626 cm²'],['weight','310 g'],['balance','310 mm'],['pattern','16×19'],['tensionRange','20–27 kg'],['color','Olive Green']] },
+  { id:'ezone-jr-25', sport:'tennis', cat:'rackets', series:'EZONE JUNIOR', name:'EZONE JUNIOR 25', price:79, img:'/a/l/all_08ezj25g_786-1.png',
+    art:{kind:'racket',c1:'#1C4FD6',c2:'#FFD200'}, opts:{grip:['G0']}, stringable:false,
+    stock:{riga:7,riga2:3,tallinn:2,vilnius:4},
+    desc:{lv:'Junioru raķete 9–11 gadus veciem spēlētājiem, ar stīgām.',en:'Junior racket for 9–11 year olds, strung.'},
+    specs:[['head','100 in²'],['weight','230 g'],['length','25 in / 635 mm'],['pattern','16×18'],['color','Blast Blue']] },
+
+  /* ---- coming soon (pre-reservation) ---- */
+  { id:'astrox-100va-zz', sport:'badminton', cat:'rackets', series:'ASTROX', name:'ASTROX 100VA ZZ', price:269, isNew:true, soon:'2026-10-24', img:'/a/l/all_ax100zva_452-1.png',
+    art:{kind:'racket',c1:'#B8AE98',c2:'#1A1A1A'}, opts:{weight:BAD_W,grip:BAD_GRIPS}, stringable:true,
+    stock:{riga:0,riga2:0,tallinn:0,vilnius:0}, preorder:{total:40,left:14},
+    desc:{lv:'ASTROX 100 ZZ versija Grayish Beige krāsā. Rezervē pirms ierašanās: pirmā partija Baltijā ir 40 raķetes.',en:'The ASTROX 100 ZZ in Grayish Beige. Reserve before arrival: the first Baltic batch is 40 rackets.'},
+    specs:[['flex','Extra stiff'],['balance','Head heavy'],['weightGrip','4U G5–6 · 3U G4–6'],['frame','HM Graphite / Namd / Tungsten / Black Micro Core'],['tensionRange','4U 20–28 lbs · 3U 21–29 lbs'],['color','Grayish Beige']] },
+
+  /* ---- strings ---- */
+  { id:'exbolt-63', sport:'badminton', cat:'strings', series:'EXBOLT', name:'EXBOLT 63', price:14, isNew:true, art:{kind:'string',c1:'#F2D100',c2:'#1A1A1A'}, stock:{riga:40,riga2:10,tallinn:15,vilnius:12},
+    desc:{lv:'Plāna 0,63 mm stīga ātram, asam atsitienam.',en:'Thin 0.63 mm string for a fast, crisp response.'}, specs:[['gauge','0.63 mm'],['len','10 m'],['feel','Repulsion / hitting sound']] },
+  { id:'bg80', sport:'badminton', cat:'strings', series:'BG', name:'BG80', price:12, art:{kind:'string',c1:'#1C4FD6',c2:'#fff'}, stock:{riga:60,riga2:20,tallinn:18,vilnius:20},
+    desc:{lv:'Cieta, skanīga stīga smashiem.',en:'Hard-feel, high-pitch string for smashes.'}, specs:[['gauge','0.68 mm'],['len','10 m'],['feel','Hard feel']] },
+  { id:'bg65', sport:'badminton', cat:'strings', series:'BG', name:'BG65', price:9, art:{kind:'string',c1:'#F4F6F8',c2:'#1A1A1A'}, stock:{riga:120,riga2:40,tallinn:30,vilnius:35},
+    desc:{lv:'Izturīgākā stīga klubiem un treniņiem.',en:'The durable club and training string.'}, specs:[['gauge','0.70 mm'],['len','10 m'],['feel','Durability']] },
+  { id:'polytour-pro-125', sport:'tennis', cat:'strings', series:'POLY TOUR', name:'POLY TOUR PRO 125', price:16, art:{kind:'string',c1:'#F2D100',c2:'#1A1A1A'}, stock:{riga:30,riga2:12,tallinn:10,vilnius:9},
+    desc:{lv:'Mīkstāks poliesteris kontrolei bez skarbuma.',en:'Softer polyester for control without harshness.'}, specs:[['gauge','1.25 mm'],['len','12 m'],['material','Polyester']] },
+  { id:'polytour-rev-125', sport:'tennis', cat:'strings', series:'POLY TOUR', name:'POLY TOUR REV 125', price:17, isNew:true, art:{kind:'string',c1:'#7A3CE0',c2:'#fff'}, stock:{riga:24,riga2:6,tallinn:8,vilnius:6},
+    desc:{lv:'Daudzstūru profils papildu rotācijai.',en:'Multi-sided profile for extra spin.'}, specs:[['gauge','1.25 mm'],['len','12 m'],['material','Polyester, 8-sided']] },
+  { id:'rexis-130', sport:'tennis', cat:'strings', series:'REXIS', name:'REXIS 130', price:22, art:{kind:'string',c1:'#EDE6D6',c2:'#8A6D3B'}, stock:{riga:14,riga2:0,tallinn:4,vilnius:3},
+    desc:{lv:'Multifilaments komfortam un elkoņa saudzēšanai.',en:'Multifilament for comfort and arm-friendliness.'}, specs:[['gauge','1.30 mm'],['len','12 m'],['material','Multifilament']] },
+
+  /* ---- shuttles & balls ---- */
+  { id:'aerosensa-50', sport:'badminton', cat:'shuttles', series:'AEROSENSA', name:'AEROSENSA 50', price:42, art:{kind:'shuttle',c1:'#fff',c2:'#1C4FD6'}, opts:{speed:['2','3','4']}, stock:{riga:80,riga2:20,tallinn:30,vilnius:25},
+    desc:{lv:'Turnīru spalvu volāni (12 gab.). Ātrums pēc zāles temperatūras.',en:'Tournament feather shuttles (tube of 12). Pick speed by hall temperature.'}, specs:[['qty','12'],['material','Goose feather'],['speedHint','2: >25°C · 3: 18–25°C · 4: <18°C']] },
+  { id:'aerosensa-30', sport:'badminton', cat:'shuttles', series:'AEROSENSA', name:'AEROSENSA 30', price:34, art:{kind:'shuttle',c1:'#fff',c2:'#17785A'}, opts:{speed:['2','3','4']}, stock:{riga:60,riga2:25,tallinn:20,vilnius:18},
+    desc:{lv:'Klubu treniņu spalvu volāni (12 gab.).',en:'Club training feather shuttles (tube of 12).'}, specs:[['qty','12'],['material','Duck feather']] },
+  { id:'mavis-350', sport:'badminton', cat:'shuttles', series:'MAVIS', name:'MAVIS 350', price:19, art:{kind:'shuttle',c1:'#F2D100',c2:'#17785A'}, opts:{speed:['slow','medium','fast']}, stock:{riga:90,riga2:30,tallinn:25,vilnius:30},
+    desc:{lv:'Neilona volāni (6 gab.) ar spalvu lidojuma trajektoriju.',en:'Nylon shuttles (tube of 6) with a feather-like flight.'}, specs:[['qty','6'],['material','Nylon / cork']] },
+  { id:'tour-balls-4', sport:'tennis', cat:'balls', series:'TOUR', name:'YONEX TOUR · 4', price:8.5, art:{kind:'ball',c1:'#DDEB3A',c2:'#fff'}, stock:{riga:200,riga2:60,tallinn:80,vilnius:70},
+    desc:{lv:'Spiediena bumbiņas visiem segumiem (4 gab.).',en:'Pressurised all-court balls (can of 4).'}, specs:[['qty','4'],['surface','All court']] },
+  { id:'tour-balls-72', sport:'tennis', cat:'balls', series:'TOUR', name:'YONEX TOUR · 72', price:139, art:{kind:'ball',c1:'#DDEB3A',c2:'#fff'}, stock:{riga:12,riga2:2,tallinn:4,vilnius:5},
+    desc:{lv:'Kaste klubiem un treneriem: 18 kannas × 4 bumbiņas.',en:'Box for clubs and coaches: 18 cans × 4 balls.'}, specs:[['qty','72'],['surface','All court']] },
+
+  /* ---- shoes ---- */
+  { id:'pc-65z', sport:'badminton', cat:'shoes', series:'POWER CUSHION', name:'POWER CUSHION 65 Z', price:139, isNew:true, art:{kind:'shoe',c1:'#F4F6F8',c2:'#1C4FD6'}, opts:{size:EU}, stock:{riga:9,riga2:0,tallinn:3,vilnius:4},
+    desc:{lv:'Populārākie Yonex badmintona apavi: amortizācija un stabilitāte.',en:'The best-selling Yonex badminton shoe: cushioning and stability.'}, specs:[['surface','Indoor court'],['tech','Power Cushion+']] },
+  { id:'pc-eclipsion-z', sport:'badminton', cat:'shoes', series:'POWER CUSHION', name:'ECLIPSION Z', price:159, art:{kind:'shoe',c1:'#15171C',c2:'#F2D100'}, opts:{size:EU}, stock:{riga:4,riga2:0,tallinn:1,vilnius:2},
+    desc:{lv:'Stabilitāte straujām kustībām aizmugurējā laukumā.',en:'Stability for explosive back-court movement.'}, specs:[['surface','Indoor court'],['tech','Power Cushion+']] },
+  { id:'pc-ad-accel', sport:'tennis', cat:'shoes', series:'POWER CUSHION', name:'AD-ACCEL', price:139, isNew:true, art:{kind:'shoe',c1:'#1C4FD6',c2:'#8FD3FF'}, opts:{size:EU,surface:['all','clay']}, stock:{riga:6,riga2:2,tallinn:2,vilnius:3},
+    desc:{lv:'Viegli, ātri tenisa apavi cietajam segumam un gruntij.',en:'Light, fast tennis shoes for hard court and clay.'}, specs:[['surface','All court / Clay'],['tech','Power Cushion']] },
+  { id:'pc-sonicage-3', sport:'tennis', cat:'shoes', series:'POWER CUSHION', name:'SONICAGE 3', price:109, art:{kind:'shoe',c1:'#F4F6F8',c2:'#17785A'}, opts:{size:EU}, stock:{riga:8,riga2:3,tallinn:2,vilnius:2},
+    desc:{lv:'Ērti ikdienas tenisa apavi klubu spēlētājam.',en:'Comfortable everyday tennis shoe for club players.'}, specs:[['surface','All court'],['tech','Power Cushion']] },
+
+  /* ---- bags ---- */
+  { id:'pro-bag-9', sport:'tennis', cat:'bags', series:'PRO', name:'PRO RACQUET BAG · 9', price:119, art:{kind:'bag',c1:'#1C4FD6',c2:'#15171C'}, stock:{riga:5,riga2:1,tallinn:2,vilnius:2},
+    desc:{lv:'Termo nodalījums 9 raketēm un apavu kabata.',en:'Thermal compartment for 9 rackets plus a shoe pocket.'}, specs:[['capacity','9'],['size','78 × 34 × 32 cm']] },
+  { id:'pro-backpack', sport:'badminton', cat:'bags', series:'PRO', name:'PRO BACKPACK M', price:79, isNew:true, art:{kind:'bag',c1:'#15171C',c2:'#F2D100'}, stock:{riga:7,riga2:2,tallinn:3,vilnius:2},
+    desc:{lv:'Mugursoma ar raķešu nodalījumu un apavu kabatu.',en:'Backpack with racket compartment and shoe pocket.'}, specs:[['capacity','2'],['size','50 × 32 × 22 cm']] },
+  { id:'team-bag-6', sport:'badminton', cat:'bags', series:'TEAM', name:'TEAM RACQUET BAG · 6', price:59, art:{kind:'bag',c1:'#C8102E',c2:'#F4F6F8'}, stock:{riga:10,riga2:3,tallinn:4,vilnius:4},
+    desc:{lv:'Klubu soma 6 raķetēm.',en:'Club bag for 6 rackets.'}, specs:[['capacity','6'],['size','75 × 30 × 24 cm']] },
+
+  /* ---- apparel & accessories ---- */
+  { id:'crew-neck-men', sport:'tennis', cat:'apparel', series:'TOUR ELITE', name:'CREW NECK SHIRT · M', price:49, isNew:true, art:{kind:'shirt',c1:'#1C4FD6',c2:'#8FD3FF'}, opts:{size:APP}, stock:{riga:14,riga2:0,tallinn:4,vilnius:5},
+    desc:{lv:'Viegls krekls ar ātri žūstošu audumu.',en:'Lightweight shirt in quick-dry fabric.'}, specs:[['material','Polyester'],['fit','Regular']] },
+  { id:'game-shirt-w', sport:'badminton', cat:'apparel', series:'GAME', name:'GAME SHIRT · W', price:45, art:{kind:'shirt',c1:'#F4F6F8',c2:'#C8102E'}, opts:{size:['XS','S','M','L','XL']}, stock:{riga:10,riga2:2,tallinn:3,vilnius:3},
+    desc:{lv:'Sieviešu spēles krekls ar ventilācijas zonām.',en:'Women’s game shirt with ventilation zones.'}, specs:[['material','Polyester'],['fit','Slim']] },
+  { id:'super-grap', sport:'badminton', cat:'accessories', series:'GRIP', name:'SUPER GRAP · 3', price:7, art:{kind:'grip',c1:'#F4F6F8',c2:'#1C4FD6'}, stock:{riga:150,riga2:50,tallinn:40,vilnius:45},
+    desc:{lv:'Klasiskā virsgripa (3 gab.) abiem sporta veidiem.',en:'The classic overgrip (pack of 3) for both sports.'}, specs:[['qty','3'],['thickness','0.6 mm']] },
+  { id:'towel-grip', sport:'badminton', cat:'accessories', series:'GRIP', name:'TOWEL GRIP', price:6, art:{kind:'grip',c1:'#F2D100',c2:'#15171C'}, stock:{riga:40,riga2:15,tallinn:10,vilnius:10},
+    desc:{lv:'Frotē gripa mitrām rokām.',en:'Terry-cloth grip for sweaty hands.'}, specs:[['qty','1'],['material','Cotton']] }
+];
+
+/* Strings offered with racket stringing (price includes labour) */
+window.STRING_OPTIONS = {
+  badminton:[{id:'none',name:'unstrung',price:0},{id:'bg65',name:'BG65',price:12},{id:'bg80',name:'BG80',price:15},{id:'exbolt-63',name:'EXBOLT 63',price:17}],
+  tennis:[{id:'none',name:'unstrung',price:0},{id:'polytour-pro-125',name:'POLY TOUR PRO 125',price:22},{id:'polytour-rev-125',name:'POLY TOUR REV 125',price:23},{id:'rexis-130',name:'REXIS 130',price:28}]
+};
+window.TENSION = { badminton:{min:18,max:30,def:24,unit:'lbs'}, tennis:{min:20,max:27,def:23,unit:'kg'} };
