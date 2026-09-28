@@ -53,7 +53,7 @@ function render(toTop){
     case 'product': ensurePdp(r.id); html = V.product(byId(r.id)); break;
     case 'new': html = V.newIn(); break;
     case 'reserve':
-      if (!S.form.store) S.form.store = (S.cart[0] && S.cart[0].store) || 'riga';
+      if (!STORES.some(s => s.id === S.form.store)) S.form.store = (S.cart[0] && STORES.some(s => s.id === S.cart[0].store)) ? S.cart[0].store : 'riga';
       if (!S.form.date) S.form.date = new Date().toISOString().slice(0,10);
       html = V.reserve(); break;
     case 'ok': html = V.confirm(); break;

@@ -1,7 +1,7 @@
 /* LV is the primary language; EN is the second. To swap EN for RU, copy the `en` block and translate. */
 window.I18N = {
   lv:{
-    proto:'Prototips', protoNote:'Cenas, atlikumi un adreses ir piemēri. Rezervācijas netiek nosūtītas.',
+    proto:'Prototips', protoNote:'Cenas un atlikumi ir piemēri. Rezervācijas netiek nosūtītas.', example:'Piemērs',
     tagline:'Oficiālais pārstāvis Baltijā',
     nav_tennis:'Teniss', nav_badminton:'Badmintons', nav_new:'Jaunumi', nav_finder:'Raķetes izvēle', nav_stores:'Veikali',
     search:'Meklēt raķeti, stīgas…', reservation:'Rezervācija',
@@ -42,7 +42,7 @@ window.I18N = {
     spec_flex:'Kāta stingrums', spec_balance:'Balanss', spec_frame:'Materiāls', spec_length:'Garums', spec_tensionRange:'Ieteicamais spriegojums',
     spec_head:'Galvas izmērs', spec_weightGrip:'Svars / gripa', spec_color:'Krāsa', spec_weight:'Svars (bez stīgām)', spec_pattern:'Stīgu raksts', spec_strung:'Stīgas',
     spec_gauge:'Diametrs', spec_len:'Garums', spec_feel:'Sajūta', spec_material:'Materiāls', spec_qty:'Gab. iepakojumā', spec_speedHint:'Ātruma izvēle',
-    spec_surface:'Segums', spec_tech:'Tehnoloģija', spec_capacity:'Raķešu skaits', spec_size:'Izmēri', spec_fit:'Piegriezums', spec_thickness:'Biezums',
+    spec_surface:'Segums', spec_tech:'Tehnoloģija', spec_capacity:'Raķešu skaits', spec_size:'Izmēri', spec_fit:'Piegriezums', spec_thickness:'Biezums', spec_use:'Lietojums',
     res_h:'Rezervācija', res_empty:'Rezervācija ir tukša.', res_empty_p:'Pievieno raķeti vai citas preces, un tās tev noliksim malā uz 48 stundām.',
     res_go:'Skatīt jaunumus', remove:'Noņemt', subtotal:'Preces', stringing:'Stīgošana', total:'Kopā saņemot', pay_note:'Tagad nav jāmaksā nekas.',
     your_data:'Kontaktinformācija', f_name:'Vārds, uzvārds', f_phone:'Tālrunis', f_email:'E-pasts', f_store:'Saņemšanas veikals', f_date:'Kad ieradīsies?', f_note:'Komentārs (neobligāti)',
@@ -59,13 +59,13 @@ window.I18N = {
     a_spin:'Ar rotāciju', a_spin_s:'Topspin no aizmugures līnijas', a_power:'Jauda un komforts', a_power_s:'Viegls, piedodošs sitiens',
     a_new:'Iesāku', a_new_s:'Līdz 1 gadam', a_club:'Klubā', a_club_s:'1–5 gadi, regulāri', a_pro:'Turnīros', a_pro_s:'Sacensības, 5+ gadi',
     back:'← Atpakaļ', restart:'Sākt no jauna', result_h:'Mūsu ieteikums',
-    foot_about:'Oficiālais YONEX izplatītājs Latvijā, Igaunijā un Lietuvā. Teniss un badmintons kopš 2004.',
+    foot_about:'Oficiālais YONEX pārstāvis Baltijā: tenisa un badmintona raķetes, stīgošana, apavi un aksesuāri.',
     foot_shop:'Veikals', foot_help:'Palīdzība', foot_help1:'Kā rezervēt', foot_help2:'Stīgošana', foot_help3:'Garantija', foot_help4:'Klubiem',
     foot_contact:'Kontakti', rights:'© 2026 YONEX Baltic · prototips',
     pcs:'gab.'
   },
   en:{
-    proto:'Prototype', protoNote:'Prices, stock and addresses are examples. Reservations are not sent.',
+    proto:'Prototype', protoNote:'Prices and stock are examples. Reservations are not sent.', example:'Example',
     tagline:'Official Baltic distributor',
     nav_tennis:'Tennis', nav_badminton:'Badminton', nav_new:'New in', nav_finder:'Racket finder', nav_stores:'Stores',
     search:'Search rackets, strings…', reservation:'Reservation',
@@ -106,7 +106,7 @@ window.I18N = {
     spec_flex:'Shaft flex', spec_balance:'Balance', spec_frame:'Material', spec_length:'Length', spec_tensionRange:'Recommended tension',
     spec_head:'Head size', spec_weightGrip:'Weight / grip', spec_color:'Colour', spec_weight:'Weight (unstrung)', spec_pattern:'String pattern', spec_strung:'Strings',
     spec_gauge:'Gauge', spec_len:'Length', spec_feel:'Feel', spec_material:'Material', spec_qty:'Pieces per pack', spec_speedHint:'Choosing speed',
-    spec_surface:'Surface', spec_tech:'Technology', spec_capacity:'Racket capacity', spec_size:'Dimensions', spec_fit:'Fit', spec_thickness:'Thickness',
+    spec_surface:'Surface', spec_tech:'Technology', spec_capacity:'Racket capacity', spec_size:'Dimensions', spec_fit:'Fit', spec_thickness:'Thickness', spec_use:'Use',
     res_h:'Reservation', res_empty:'Your reservation is empty.', res_empty_p:'Add a racket or other products and we’ll set them aside for 48 hours.',
     res_go:'See new arrivals', remove:'Remove', subtotal:'Products', stringing:'Stringing', total:'Total at pickup', pay_note:'Nothing to pay now.',
     your_data:'Contact details', f_name:'Full name', f_phone:'Phone', f_email:'Email', f_store:'Pickup store', f_date:'When will you come?', f_note:'Comment (optional)',
@@ -123,7 +123,7 @@ window.I18N = {
     a_spin:'With spin', a_spin_s:'Topspin from the baseline', a_power:'Power and comfort', a_power_s:'Easy, forgiving hitting',
     a_new:'Beginner', a_new_s:'Under 1 year', a_club:'Club player', a_club_s:'1–5 years, regularly', a_pro:'Competitive', a_pro_s:'Tournaments, 5+ years',
     back:'← Back', restart:'Start over', result_h:'Our recommendation',
-    foot_about:'Official YONEX distributor for Latvia, Estonia and Lithuania. Tennis and badminton since 2004.',
+    foot_about:'Official YONEX representative in the Baltics: tennis and badminton rackets, stringing, shoes and accessories.',
     foot_shop:'Shop', foot_help:'Help', foot_help1:'How to reserve', foot_help2:'Stringing', foot_help3:'Warranty', foot_help4:'For clubs',
     foot_contact:'Contact', rights:'© 2026 YONEX Baltic · prototype',
     pcs:'pcs'

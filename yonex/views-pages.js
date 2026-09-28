@@ -103,14 +103,14 @@ V.reserve = function(){
 V.confirm = function(){
   const o = S.lastOrder;
   if (!o) return V.reserve();
-  const st = STORES.find(s=>s.id===o.store);
+  const st = STORES.find(s=>s.id===o.store) || STORES[0];
   return `<div class="wrap"><div class="ticket">
     <div class="ticket-top"><span class="eyebrow">${t('ok_eyebrow')}</span><h1>${t('ok_h')}</h1>
       <span class="muted" style="color:#9AA6BA;font-size:13px">${t('ok_code')}</span><span class="ticket-code">${o.code}</span><span style="color:#C5CFDE;font-size:14px">${t('ok_show')}</span></div>
     <div class="ticket-cut"></div>
     <div class="ticket-body">
       <dl class="kv">
-        <dt>${t('ok_where')}</dt><dd>${L(st.name)}<br><span class="muted">${esc(st.addr)} · ${esc(st.hours)}</span></dd>
+        <dt>${t('ok_where')}</dt><dd>${L(st.name)}<br><span class="muted">${esc(st.addr)}<br>${esc(L(st.hours))}${st.phone?`<br>${st.phone}`:''}</span></dd>
         <dt>${t('ok_until')}</dt><dd>${fmtDate(new Date(o.until), true)}</dd>
         <dt>${t('ok_items')}</dt><dd>${o.lines.map(l=>`${esc(l.name)} × ${l.qty}<br><span class="muted mono">${esc(l.opts)}</span>`).join('<br>')}</dd>
         <dt>${t('ok_total')}</dt><dd class="price num">${money(o.total)}</dd>
@@ -127,7 +127,9 @@ V.stores = function(){
     <div class="page-h"><div class="crumbs"><a href="#/">YONEX Baltic</a>/<span>${t('nav_stores')}</span></div><h1>${t('stores_h')}</h1><p class="muted">${t('stores_p')}</p></div>
     <div class="stores">${STORES.map(s => { const n = rk.reduce((a,p)=>a+(p.stock[s.id]||0),0);
       return `<div class="store"><span class="flag">${s.country} · ${esc(s.city).toUpperCase()}</span><h3>${L(s.name)}</h3>
-        <span>${esc(s.addr)}</span><span class="hrs">${esc(s.hours)}</span>
+        <span>${esc(s.addr)}</span><span class="hrs">${esc(L(s.hours))}</span>
+        ${s.phone ? `<span class="hrs">${s.phone} · ${s.email}</span>` : ''}
+        ${s.example ? `<span class="chip chip-line" style="align-self:flex-start">${t('example')}</span>` : ''}
         <ul>${s.services.map(x=>`<li class="chip chip-line">${t('srv_'+x)}</li>`).join('')}</ul>
         <span class="stock"><i class="dot ${n?'dot-ok':'dot-no'}"></i><span class="num">${n}</span>&nbsp;${S.lang==='lv'?'raķetes uz vietas':'rackets in store'}</span></div>`; }).join('')}</div></div>`;
 };

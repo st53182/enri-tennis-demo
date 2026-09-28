@@ -5,7 +5,7 @@ const L = o => o == null ? '' : (typeof o === 'string' ? o : (o[S.lang] ?? o.lv)
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => new Intl.NumberFormat(S.lang === 'lv' ? 'lv-LV' : 'en-IE', {style:'currency', currency:'EUR', minimumFractionDigits: n % 1 ? 2 : 0}).format(n);
 const byId = id => PRODUCTS.find(p => p.id === id);
-const totalStock = p => Object.values(p.stock).reduce((a,b)=>a+b,0);
+const totalStock = p => STORES.reduce((a,s)=>a+(p.stock[s.id]||0),0);
 const fmtDate = (d, withTime) => d.toLocaleDateString(S.lang === 'lv' ? 'lv-LV' : 'en-GB', {weekday:'short', day:'numeric', month:'short', ...(withTime ? {hour:'2-digit', minute:'2-digit'} : {})});
 const ICON = {
   search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
@@ -75,7 +75,7 @@ V.footer = () => `<div class="wrap ftr-in">
     <div><a class="logo" href="#/" aria-label="YONEX Baltic">${ART.logo}<span class="logo-b">BALTIC</span></a><p style="margin-top:14px">${t('foot_about')}</p></div>
     <div><h4>${t('foot_shop')}</h4><a href="#/tennis">${t('nav_tennis')}</a><a href="#/badminton">${t('nav_badminton')}</a><a href="#/new">${t('nav_new')}</a><a href="#/finder">${t('nav_finder')}</a></div>
     <div><h4>${t('foot_help')}</h4><a href="#/#how">${t('foot_help1')}</a><a href="#/#svc">${t('foot_help2')}</a><a href="#/stores">${t('foot_help3')}</a><a href="#/#svc">${t('foot_help4')}</a></div>
-    <div><h4>${t('foot_contact')}</h4><a href="#/stores">${t('nav_stores')}</a><p class="mono" style="margin-top:6px">info@yonex-baltic.example</p></div>
+    <div><h4>${t('foot_contact')}</h4><p>SIA SETS<br>${esc(STORES[0].addr)}<br>${esc(L(STORES[0].hours))}</p><p class="mono" style="margin-top:8px">${STORES[0].phone}<br>${STORES[0].email}</p></div>
   </div>
   <div class="wrap ftr-bottom"><span>${t('rights')}</span><span>LV · EE · LT</span></div>`;
 

@@ -17,11 +17,12 @@ To update it, copy this folder over `yonex/` there and push to `main`.
 
 ## Content sources
 
-- Racket names, specs and photos: yonex.com. Photos are loaded from the yonex.com image CDN
-  (`IMG_BASE` in `data.js`); if one fails, the drawn SVG in `art.js` is shown instead.
+- Product names, specs and photos (rackets, strings, shuttles, balls, shoes, bags, apparel, grips): yonex.com.
+  Photos are loaded from the yonex.com image CDN (`IMG_BASE` in `data.js`); if one fails,
+  the drawn SVG in `art.js` is shown instead.
 - YONEX logo: official wordmark from yonex.com, inlined in `art.js`.
-- Prices, stock, store addresses and the pre-order batch are placeholders.
-  Confirm with the distributor before showing the prototype outside the team.
+- Riga store: SIA SETS, Kalnciema iela 119, Rīga, +371 67312413, info@yonex.lv (from yonex.lv).
+- Placeholders: prices, stock, the Tallinn and Vilnius partner stores (marked "Example") and the pre-order batch.
 
 ## Files
 
