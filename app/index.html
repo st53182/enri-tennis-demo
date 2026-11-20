@@ -7,15 +7,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Tenly">
-<meta name="theme-color" content="#f4f3ef">
+<meta name="theme-color" content="#f2f4f8">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet">
 <title>Tenly — прототип приложения</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2331403f'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%23b38a4c'/%3E%3Cpath d='M19 21c7 6 7 16 0 22M45 21c-7 6-7 16 0 22' stroke='%2331403f' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5fae'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%23d6ec3c'/%3E%3Cpath d='M19 21c7 6 7 16 0 22M45 21c-7 6-7 16 0 22' stroke='%231f5fae' stroke-width='3' fill='none'/%3E%3C/svg%3E">
 <style>
 :root{
-  --bg:#f4f3ef;--card:#fff;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;--line:#e7e9ef;
-  --pri:#31403f;--pri2:#435653;--pri-soft:#e9eeec;--ball:#eee3d0;--ball-d:#b38a4c;--gold:#b38a4c;
+  --bg:#f2f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;--line:#e7e9ef;
+  --pri:#1f5fae;--pri2:#2b6cc0;--pri-soft:#e6eefa;--ball:#edf5c4;--ball-d:#c4dc2a;--gold:#c4dc2a;
   --ok:#16a34a;--ok-soft:#dcfce7;--warn:#d97706;--warn-soft:#fef3c7;--bad:#dc2626;--bad-soft:#fee2e2;
   --r:18px;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;
@@ -30,7 +30,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 
 /* ---------- stage (desktop) ---------- */
 .stage{height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding:20px;
-  background:radial-gradient(1200px 600px at 80% -10%,#d9c4a6 0,transparent 60%),radial-gradient(900px 500px at -10% 110%,#c9d6d2 0,transparent 55%),#ebe8e1}
+  background:radial-gradient(1200px 600px at 80% -10%,#c6d9f3 0,transparent 60%),radial-gradient(900px 500px at -10% 110%,#e3f0b8 0,transparent 55%),#e7ecf3}
 .panel{width:360px;max-height:calc(100vh - 40px);overflow:auto;padding:4px 4px 20px}
 .panel .brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .panel .brand .logo{width:44px;height:44px}
@@ -124,7 +124,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 
 .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:7px;background:#f1f5f9;color:#334155;white-space:nowrap}
 .tag svg{width:13px;height:13px}
-.tag.lv{background:var(--ball);color:#6b4f24}
+.tag.lv{background:var(--ball);color:#3d4a07}
 .tag.ok{background:var(--ok-soft);color:#166534}
 .tag.warn{background:var(--warn-soft);color:#92400e}
 .tag.bad{background:var(--bad-soft);color:#991b1b}
@@ -157,11 +157,11 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 
 /* hero next training */
 .hero{border-radius:22px;padding:18px;color:#fff;position:relative;overflow:hidden;
-  background:linear-gradient(140deg,#455855 0%,#1f2b2a 100%)}
+  background:radial-gradient(120% 90% at 50% 60%,#2464b3 0 62%,#3b80cc 62.4%);}
 .hero:before{content:"";position:absolute;inset:0;background:
   linear-gradient(90deg,transparent 49.6%,rgba(255,255,255,.18) 49.6% 50.4%,transparent 50.4%),
   linear-gradient(0deg,transparent 30%,rgba(255,255,255,.14) 30% 30.8%,transparent 30.8%);pointer-events:none}
-.hero .ball{position:absolute;right:-26px;top:-26px;width:110px;height:110px;border-radius:50%;background:linear-gradient(145deg,#d9c4a6,#b38a4c);opacity:.95}
+.hero .ball{position:absolute;right:-26px;top:-26px;width:110px;height:110px;border-radius:50%;background:linear-gradient(145deg,#ecf77a,#c4dc2a);opacity:.95}
 .hero .ball:after{content:"";position:absolute;inset:14px;border-radius:50%;border:4px solid rgba(255,255,255,.35);clip-path:inset(0 50% 0 0)}
 .hero .lbl{font-size:13px;font-weight:600;opacity:.8;position:relative}
 .hero .when{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:4px;position:relative}
@@ -280,12 +280,12 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .qopt.on{box-shadow:inset 0 0 0 2px var(--pri);background:#f5f8ff}
 .qopt .n{width:28px;height:28px;border-radius:50%;background:#f1f5f9;display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted);flex-shrink:0}
 .qopt.on .n{background:var(--pri);color:#fff}
-.scale{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#eee3d0,#d9c4a6,#7d8c89,#31403f);margin:22px 4px 8px}
+.scale{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#d3e3f7,#7fa8dc,#2b6cc0,#173f78);margin:22px 4px 8px}
 .scale .mk{position:absolute;top:50%;width:26px;height:26px;border-radius:50%;background:var(--gold);border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);transform:translate(-50%,-50%)}
 .scale-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600;padding:0 2px}
 .big-rating{font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--pri)}
-.rating-ball{width:120px;height:120px;border-radius:50%;background:linear-gradient(145deg,#e6d6bc,#b38a4c);display:grid;place-items:center;margin:10px auto;position:relative;box-shadow:0 18px 40px -12px rgba(179,138,76,.7)}
-.rating-ball span{font-size:44px;font-weight:800;color:#1f2b2a;font-family:Raleway,sans-serif;letter-spacing:-.03em}
+.rating-ball{width:120px;height:120px;border-radius:50%;background:linear-gradient(145deg,#eef78a,#c4dc2a);display:grid;place-items:center;margin:10px auto;position:relative;box-shadow:0 18px 40px -12px rgba(170,200,40,.7)}
+.rating-ball span{font-size:44px;font-weight:800;color:#26310a;font-family:Raleway,sans-serif;letter-spacing:-.03em}
 .rating-ball:after{content:"";position:absolute;inset:10px;border-radius:50%;border:4px solid rgba(255,255,255,.7);clip-path:inset(0 0 0 55%)}
 
 /* calendar */
@@ -303,7 +303,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .cal-d.sel{background:var(--pri);color:#fff}
 .cal-d .dots{display:flex;gap:2px;height:5px}
 .cal-d .dots i{width:5px;height:5px;border-radius:50%;background:var(--pri)}
-.cal-d.sel .dots i{background:#d9c4a6}
+.cal-d.sel .dots i{background:#b9d3f0}
 .cal-d .dots i.my{background:var(--ball-d)}
 
 .week{display:flex;gap:6px;margin-bottom:10px}
@@ -330,7 +330,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .spots{display:flex;gap:4px;margin-top:8px}
 .spots i{flex:1;height:8px;border-radius:4px;background:#e2e8f0}
 .spots i.p{background:var(--pri)}
-.spots i.d{background:#d9c4a6}
+.spots i.d{background:#b9d3f0}
 .legend{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:5px}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
@@ -349,10 +349,10 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .cardviz .num{font-size:18px;letter-spacing:.12em;font-weight:600}
 .empty{text-align:center;padding:30px 20px;color:var(--muted)}
 .empty .ei{width:60px;height:60px;border-radius:50%;background:#fff;display:grid;place-items:center;margin:0 auto 12px;color:var(--pri)}
-.note{display:flex;gap:10px;background:var(--pri-soft);color:#24302f;border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.45}
+.note{display:flex;gap:10px;background:var(--pri-soft);color:#173a6b;border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.45}
 .note svg{width:18px;height:18px;margin-top:1px}
 .note.warn{background:var(--warn-soft);color:#78350f}
-.fab{position:absolute;right:18px;bottom:100px;z-index:15;width:56px;height:56px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px -6px rgba(49,64,63,.55)}
+.fab{position:absolute;right:18px;bottom:100px;z-index:15;width:56px;height:56px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px -6px rgba(31,95,174,.55)}
 .fab svg{width:26px;height:26px}
 .check{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #cbd5e1;display:grid;place-items:center;color:#fff;flex-shrink:0}
 .check.on{background:var(--ok);box-shadow:none}
@@ -419,7 +419,7 @@ whistle:'<circle cx="8" cy="15" r="5"/><path d="M12 12l9-5v4l-6 3"/>',
 };
 const ic=(n,s)=>`<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;height:${s}px"`:''}>${IC[n]||''}</svg>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const LOGO=`<svg class="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#31403f"/><circle cx="35" cy="27" r="13" fill="none" stroke="#b38a4c" stroke-width="2.5"/><circle cx="35" cy="27" r="6" fill="#b38a4c"/><path d="M26 37 17 49" stroke="#b38a4c" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+const LOGO=`<svg class="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#1f5fae"/><circle cx="35" cy="27" r="13" fill="none" stroke="#c4dc2a" stroke-width="2.5"/><circle cx="35" cy="27" r="6" fill="#c4dc2a"/><path d="M26 37 17 49" stroke="#c4dc2a" stroke-width="3.5" stroke-linecap="round"/></svg>`;
 
 /* ---------- dates ---------- */
 const DAY=864e5;
@@ -454,6 +454,7 @@ const CATS={
 const catOf=r=>r<=1.5?'zero':r<=2.5?'beg':r<=3.5?'mid':'adv';
 const lvInfo=r=>CATS[catOf(r)];
 const lvRange=t=>{const c=CATS[t.level];return `${fmtR(c.min)}–${fmtR(c.max)}`};
+const VENUE={name:'Enri',full:'Теннисный клуб Enri',addr:'Kalnciema iela 207, Rīga',map:'https://www.google.com/maps/search/?api=1&query=Kalnciema+iela+207+Riga'};
 const priceFor=dur=>dur/60*30;
 const monthFor=dur=>dur<=60?120:dur<=90?160:200;
 
@@ -470,12 +471,12 @@ const scoreToNtrp=ans=>{const s=ans.reduce((a,b)=>a+b,0);return Math.min(5,Math.
 
 /* ---------- demo data ---------- */
 const GROUP_DESC='Постоянный состав и прогресс от занятия к занятию. Можно прийти разово или закрепить за собой постоянное место с ежемесячной оплатой.';
-const COLORS=['#7d8c89','#b38a4c','#5b6e6a','#a07a5a','#8a9a7b','#6b7f91','#9c7c8c','#4f6360','#c19a6b','#7a6f5f'];
+const COLORS=['#2b6cc0','#4f8fd6','#1a4f94','#5f8f3a','#3f7fa8','#7a6fc0','#c0763a','#2f8f86','#8a5aa8','#5f7a99'];
 
 function seedData(){
   const coaches=[
-   {id:'c1',name:'Анастасия',short:'Анастасия',role:'Тренер',color:'#b38a4c',about:'Тренер Tenly'},
-   {id:'c2',name:'Олег',short:'Олег',role:'Тренер',color:'#31403f',about:'Тренер Tenly'},
+   {id:'c1',name:'Анастасия',short:'Анастасия',role:'Тренер',color:'#4f8fd6',about:'Тренер Tenly'},
+   {id:'c2',name:'Олег',short:'Олег',role:'Тренер',color:'#1a4f94',about:'Тренер Tenly'},
   ];
   const admins=[{id:'a1',name:'Илзе Витола',role:'Администратор'}];
   const P=(id,name,self,hidden=null,phone='')=>({id,name,self,hidden,phone});
@@ -721,7 +722,7 @@ function onboarding(){
   if(o.step==='lang')return `<div class="view ${S.anim||''}"><div class="ob" style="padding-top:40px">
       <div style="width:76px;height:76px">${LOGO.replace('class="logo"','style="width:76px;height:76px"')}</div>
       <h1>Добро пожаловать<br>в <span class="wordmark" style="letter-spacing:.2em">TENLY</span></h1>
-      <p class="lead">Запись на тренировки, абонементы и оплата — в одном приложении.</p>
+      <p class="lead">Запись на тренировки, абонементы и оплата — в одном приложении. Занятия проходят в теннисном клубе Enri, Kalnciema iela 207.</p>
       <div class="muted fs13 b" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Язык / Valoda / Language</div>
       ${[['lv','🇱🇻','Latviešu'],['ru','🇷🇺','Русский'],['en','🇬🇧','English']].map(([k,f,n])=>`<button class="lang ${o.lang===k?'on':''}" data-a="obLang" data-k="${k}"><span class="fl">${f}</span>${n}${o.lang===k?`<span class="ck">${ic('check',22)}</span>`:''}</button>`).join('')}
       <div class="grow"></div>
@@ -809,7 +810,7 @@ SCREENS.home=()=>{
   }
   const hero=nx?`<div class="hero"><div class="ball"></div><div class="lbl">Следующая тренировка</div>
       <div class="when">${relDay(nx.start)}, ${hm(nx.start)}</div><div class="what">${esc(nx.t.title)}</div>
-      <div class="meta"><span>${ic('user')}${esc(coach(nx.t.coach).name)}</span><span>${ic('pin')}${esc(nx.t.court)}</span><span>${ic('clock')}${nx.t.dur} мин</span></div>
+      <div class="meta"><span>${ic('user')}${esc(coach(nx.t.coach).name)}</span><span>${ic('pin')}${VENUE.name}, ${esc(nx.t.court)}</span><span>${ic('clock')}${nx.t.dur} мин</span></div>
       <div class="cd">${ic('clock',15)}&nbsp;${countdown(nx.start)}</div>
       <div class="acts"><button class="btn w" data-a="openTr" data-id="${nx.id}">Подробнее</button><button class="btn t" data-a="addCal">${ic('cal',18)}В календарь</button></div></div>`
     :`<div class="card" style="text-align:center;padding:24px 18px"><div class="empty" style="padding:0"><div class="ei" style="background:var(--pri-soft)">${ic('ball',28)}</div></div>
@@ -884,13 +885,15 @@ SCREENS.training=(p)=>{
   return `${navbar('Тренировка')}<div class="content no-tab" data-scroll="tr${p.id}" style="padding-bottom:120px">
     <div class="detail-hero"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="tag lv">NTRP ${lvRange(t)}</span>${st.member?`<span class="tag pri">${ic('repeat')}Ваша группа</span>`:''}${st.booking?`<span class="tag ok">${ic('check')}Вы записаны · ${st.booking.pay==='cash'?'наличные на месте':'оплачено картой'}</span>`:''}</div>
       <h2>${esc(t.title)}</h2><div class="muted">${longDay(x.start)}, ${hm(x.start)}–${hm(x.end)}</div>
-      <div class="facts"><div class="fact"><small>Длительность</small><b>${t.dur} минут</b></div><div class="fact"><small>Корт</small><b>${esc(t.court)}</b></div>
+      <div class="facts"><div class="fact"><small>Длительность</small><b>${t.dur} минут</b></div><div class="fact"><small>Где</small><b>${VENUE.name} · ${esc(t.court)}</b></div>
         <div class="fact"><small>Разово</small><b>${eur(t.price)}</b></div><div class="fact"><small>Постоянное место</small><b>${t.month?`€${t.month}/мес`:'—'}</b></div></div>
       ${st.locked?`<div class="note warn mt12">${ic('lock')}<div>Эта группа для уровня «${CATS[t.level].name}» и не подходит под ваш текущий уровень. Можно запросить допуск — тренер рассмотрит.</div></div>`:''}
     </div>
     <div class="sec-t"><h3>Места</h3></div>
     <div class="list"><div class="li"><div class="lic">${ic('users',18)}</div><div class="lt"><b>Разовая запись</b><span>На ${dShort(x.start)}</span></div>${yes(x.left>0,'Есть места','Мест нет')}</div>
       ${t.month?`<div class="li"><div class="lic">${ic('repeat',18)}</div><div class="lt"><b>Постоянное место</b><span>${WDA[t.weekday]} в ${t.time}</span></div>${yes(x.permFree>0,'Есть','Нет')}</div>`:''}</div>
+    <div class="sec-t"><h3>Где</h3></div>
+    <div class="list"><a class="li" href="${VENUE.map}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><div class="lic">${ic('pin',18)}</div><div class="lt"><b>${VENUE.full}</b><span>${VENUE.addr} · ${esc(t.court)}</span></div><div class="lr" style="color:var(--pri);font-weight:600">Маршрут${ic('chevR')}</div></a></div>
     <div class="sec-t"><h3>Тренер</h3></div>
     <div class="list"><div class="li">${coachAv(c,'')}<div class="lt"><b>${esc(c.name)}</b><span>${esc(c.about)}</span></div></div></div>
     <div class="sec-t"><h3>О группе</h3></div>
@@ -983,7 +986,7 @@ SCREENS.cSession=(p)=>{
   const present=Object.values(att).filter(Boolean).length;
   const adm=S.role==='admin';
   return `${navbar('Занятие',adm?`<button class="act" data-a="go" data-n="aTplEdit" data-id="${x.t.id}">Изменить</button>`:'')}<div class="content no-tab" data-scroll="cs${p.id}">
-    <div class="detail-hero"><span class="tag lv">NTRP ${lvRange(x.t)}</span><h2>${esc(x.t.title)}</h2><div class="muted">${longDay(x.start)}, ${hm(x.start)}–${hm(x.end)} · ${esc(x.t.court)}${adm?` · ${esc(coach(x.t.coach).name)}`:''}</div>
+    <div class="detail-hero"><span class="tag lv">NTRP ${lvRange(x.t)}</span><h2>${esc(x.t.title)}</h2><div class="muted">${longDay(x.start)}, ${hm(x.start)}–${hm(x.end)} · ${VENUE.name}, ${esc(x.t.court)}${adm?` · ${esc(coach(x.t.coach).name)}`:''}</div>
       <div class="facts"><div class="fact"><small>Записано</small><b>${parts.length} из ${x.t.cap}</b></div><div class="fact"><small>Отмечено</small><b>${present} ${plural(present,'игрок','игрока','игроков')}</b></div></div></div>
     <div class="sec-t"><h3>Участники</h3><button data-a="attAll" data-inst="${x.id}">Отметить всех</button></div>
     <div class="list">${rows||'<div class="empty">Пока никто не записан</div>'}</div>
@@ -1139,7 +1142,7 @@ function sheet(){
     const opt=s.opt||'single';const method=opt==='perm'?'card':(s.method||'card');
     const amount=opt==='perm'?t.month:t.price;
     return hd('Запись на тренировку')+`<div class="sh-b">
-      <div class="card" style="margin-bottom:14px"><b>${esc(t.title)}</b><div class="muted fs14">${longDay(x.start)}, ${hm(x.start)} · ${esc(coach(t.coach).short)}</div></div>
+      <div class="card" style="margin-bottom:14px"><b>${esc(t.title)}</b><div class="muted fs14">${longDay(x.start)}, ${hm(x.start)} · ${esc(coach(t.coach).short)}</div><div class="muted fs13 mt8">${ic('pin',14)} ${VENUE.full}, ${VENUE.addr} · ${esc(t.court)}</div></div>
       <div class="grp-h">Формат</div>
       <button class="opt ${opt==='single'?'on':''}" data-a="bOpt" data-v="single"><span class="rd"></span><span class="ot"><b>Разовое посещение</b><p>Только ${dShort(x.start)}. Отмена бесплатно за 12 часов.</p></span><span class="op">${eur(t.price)}</span></button>
       ${t.month?`<button class="opt ${opt==='perm'?'on':''} ${canPerm?'':'dis'}" data-a="bOpt" data-v="perm"><span class="rd"></span><span class="ot"><b>Постоянное место</b><p>${canPerm?`Место закреплено за вами ${WDA[t.weekday]} в ${t.time}. Оплата раз в месяц, напомним за 3 дня.`:'Все постоянные места заняты'}</p></span><span class="op">€${t.month}<small class="muted" style="font-weight:500;font-size:12px">/мес</small></span></button>`:''}
@@ -1214,6 +1217,7 @@ function demoPanel(inSheet){
 }
 const CONCEPT=`
 <p><b>Цель первого релиза:</b> игрок Tenly сам находит тренировку своей группы, записывается и платит за минуту; школа меньше занимается перепиской и контролем оплат.</p>
+<p><b>Где:</b> теннисный клуб Enri, Kalnciema iela 207, Рига — адрес и маршрут в карточке каждой тренировки.</p>
 <h5>Роли</h5><ul><li><b>Игрок</b> — запись, абонементы, оплата. Скоро: профили детей в одном аккаунте.</li><li><b>Тренер</b> (Анастасия, Олег) — только свои занятия: участники, посещаемость, наличные, предложение уровня.</li><li><b>Администратор</b> — всё расписание и состав каждого занятия, игроки, скрытый рейтинг, команда.</li></ul>
 <h5>Новый пользователь</h5><ul><li>Язык: LV / RU / EN → регистрация (телефон + SMS, Apple, Google).</li><li>Тест из 7 вопросов → NTRP 1.0–5.0 с шагом 0.5.</li><li>Расписание сразу отфильтровано по группе игрока.</li></ul>
 <h5>4 группы по уровню</h5><ul><li>Новички без опыта — NTRP 1.0–1.5</li><li>Новички до года — NTRP 2.0–2.5</li><li>Средний уровень — NTRP 3.0–3.5</li><li>Продвинутые любители — NTRP 4.0–5.0</li></ul>
