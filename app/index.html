@@ -597,12 +597,14 @@ function seedData(){
 
 /* ---------- state ---------- */
 let D=seedData();
-const S={
+/* initial UI state of the prototype; «Сбросить демо» restores exactly this (plus fresh seed data) */
+const initS=()=>({
   role:'player', stack:[{n:'home'}], anim:null, sheet:null, toast:null,
   sched:{view:'list',group:'day',sort:'time',mine:true,coaches:[],durs:[],tods:[],kinds:[],permOnly:false,sel:ymd(T0),month:new Date(T0.getFullYear(),T0.getMonth(),1)},
   my:'up', aTrain:'all', aPlayersF:'all', ob:null, reg:false, newUid:null,
   payDueIn:2, renewPaid:false, scroll:{}, coachId:'c1',
-};
+});
+const S=initS();
 const ROLE_TABS={
   player:[['home','Главная','home'],['schedule','Запись','cal'],['my','Мои тренировки','list'],['profile','Профиль','user']],
   coach:[['cSessions','Занятия','whistle'],['cPlayers','Игроки','users'],['cProfile','Профиль','user']],
@@ -1724,7 +1726,8 @@ const A={
   toast:e=>toast(e.dataset.t),
   openDemo:()=>{if(innerWidth>600){toast('Сменить сценарий можно в панели слева');return}openSheet('demo')},
   role:e=>setRole(e.dataset.r),
-  reset:()=>{Object.assign(PRICES,PRICES0);D=seedData();S.reg=false;S.ob=null;S.newUid=null;S.renewPaid=false;S.payDueIn=2;S.sheet=null;S.sched.mine=true;S.sched.coaches=[];S.sched.durs=[];S.sched.tods=[];S.sched.kinds=[];S.sched.permOnly=false;setRole(S.role);toast('Демо-данные сброшены')},
+  reset:()=>{const role=S.role;Object.keys(PRICES).forEach(k=>delete PRICES[k]);Object.assign(PRICES,PRICES0);D=seedData();
+    Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,initS());setRole(role);toast('Демо сброшено к начальному состоянию')},
   due:e=>{S.payDueIn=+e.dataset.v;S.renewPaid=false;if(S.role==='player')S.stack=[{n:'home'}];render()},
   // onboarding
   obLang:e=>{S.ob.lang=e.dataset.k;if(e.dataset.k!=='ru')toast('В прототипе показан русский интерфейс — в приложении будут LV, RU и EN');else render()},
