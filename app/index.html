@@ -11,7 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet">
 <title>Tenly — прототип приложения</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5fae'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%23d6ec3c'/%3E%3Cpath d='M19 21c7 6 7 16 0 22M45 21c-7 6-7 16 0 22' stroke='%231f5fae' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <style>
 :root{
   --bg:#f2f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;--line:#e7e9ef;
@@ -33,7 +34,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
   background:radial-gradient(1200px 600px at 80% -10%,#c6d9f3 0,transparent 60%),radial-gradient(900px 500px at -10% 110%,#e3f0b8 0,transparent 55%),#e7ecf3}
 .panel{width:360px;max-height:calc(100vh - 40px);overflow:auto;padding:4px 4px 20px}
 .panel .brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.panel .brand .logo{width:44px;height:44px}
+.panel .brand .logo{height:58px;width:auto}
 .panel h2{font-size:22px;line-height:1.2;margin:0}
 .panel .sub{color:var(--muted);font-size:14px;margin:4px 0 18px}
 .panel h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 8px}
@@ -453,7 +454,7 @@ whistle:'<circle cx="8" cy="15" r="5"/><path d="M12 12l9-5v4l-6 3"/>',
 };
 const ic=(n,s)=>`<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;height:${s}px"`:''}>${IC[n]||''}</svg>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const LOGO=`<svg class="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#1f5fae"/><circle cx="35" cy="27" r="13" fill="none" stroke="#c4dc2a" stroke-width="2.5"/><circle cx="35" cy="27" r="6" fill="#c4dc2a"/><path d="M26 37 17 49" stroke="#c4dc2a" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+const LOGO=`<img class="logo" src="logo.png" alt="Tenly">`;
 
 /* ---------- dates ---------- */
 const DAY=864e5;
@@ -887,7 +888,7 @@ function onboarding(){
   const o=S.ob||(S.ob={step:'lang',lang:'ru',ans:[],q:0});
   const backBtn=(to)=>`<div class="navbar"><button class="back" data-a="obGo" data-step="${to}">${ic('chevL')}Назад</button><div></div><div></div></div>`;
   if(o.step==='lang')return `<div class="view ${S.anim||''}"><div class="ob" style="padding-top:40px">
-      <div style="width:76px;height:76px">${LOGO.replace('class="logo"','style="width:76px;height:76px"')}</div>
+      <img src="logo.png" alt="Tenly" style="height:104px;width:auto;align-self:flex-start">
       <h1>Добро пожаловать<br>в <span class="wordmark" style="letter-spacing:.2em">TENLY</span></h1>
       <p class="lead">Запись на тренировки, абонементы и оплата — в одном приложении. Занятия проходят в теннисном клубе Enri, Kalnciema iela 207.</p>
       <div class="muted fs13 b" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Язык / Valoda / Language</div>
@@ -1159,7 +1160,7 @@ SCREENS.invoice=(p)=>{
   return `${navbar('Счёт')}<div class="content no-tab" data-scroll="inv${p.id}">
     <div class="between" style="margin:0 4px 8px"><span class="fs13 muted">Rēķins · документ на латышском</span><span class="tag ${st[0]}">${st[1]}</span></div>
     <div class="inv" style="font-size:12px;line-height:1.45;color:#111;overflow:hidden;padding:16px;word-break:break-word">
-      <div class="wordmark" style="font-size:24px;color:#1f2b2a">TENLY</div>
+      <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" alt="" style="height:46px;width:auto"><span class="wordmark" style="font-size:24px;color:#1f2b2a">TENLY</span></div>
       <div class="mt12" style="display:grid;grid-template-columns:1fr;gap:10px">
         <div><b>Piegādātājs: ${SUPPLIER.name}</b><br>Jur. adrese: ${SUPPLIER.addr}<br>Reģ. Nr.: ${SUPPLIER.reg}<br>PVN reģ. Nr.: ${SUPPLIER.pvn}<br>Konts: ${SUPPLIER.iban}<br>Banka: ${SUPPLIER.bank}<br>SWIFT (BIC): ${SUPPLIER.swift}</div>
         <div><b>Saņēmējs:</b><br>Vārds, uzvārds: ${esc(u.name)}<br>Personas kods: ${u.pk?esc(u.pk):'<span style="color:#b45309">nav norādīts</span>'}</div>
