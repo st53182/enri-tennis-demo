@@ -690,6 +690,17 @@ function abonDebt(u,t,y,m){const b=monthBill(t,u,y,m);if(!b.active.length||abonP
 function debtById(id){const d=debts().find(d=>d.id===id);if(d)return d;if(id.startsWith('C:')){const[u,tid,ym]=id.slice(2).split('|');const[y,mo]=ym.split('-').map(Number);const t=tpl(tid);return t&&abonDebt(u,t,y,mo-1)}return null}
 function abonInvoice(u,t,y,m,method,extra={}){const b=monthBill(t,u,y,m);
   return addInvoice({uid:u,kind:'abon',title:`Абонемент за ${MN[m].toLowerCase()}: ${t.title}`,sessions:b.active,period:{from:ymd(new Date(y,m,1)),to:ymd(new Date(y,m+1,0))},lines:[{name:`Абонемент «${t.title}» за ${MN[m].toLowerCase()}`,detail:b.active.map(ds=>dShort(pYmd(ds))).join(', '),sum:b.amount}],amount:b.amount,method,...extra})}
+const tLabel=t=>`${t.title} · ${WD[t.weekday].toLowerCase()} ${t.time}`;
+/* subscription months the player still has to pay: unpaid current month (overdue) and next month once the 3-day window opens */
+function abonDues(u){const out=[];const nm=nextMonthStart();
+  D.memberships.filter(m=>m.uid===u).forEach(m=>{const t=tpl(m.tpl);if(!t||t.deleted)return;
+    [[T0.getFullYear(),T0.getMonth(),true],[nm.getFullYear(),nm.getMonth(),false]].forEach(([y,mo,cur])=>{
+      if(!cur&&S.payDueIn>3)return;if(!monthMembers(t,y,mo).includes(u)||abonPaid(u,t.id,y,mo))return;
+      if(m.pay==='cash'&&!m.paid&&m.since.slice(0,7)===ymKey(y,mo))return; // first payment in cash on site
+      const b=monthBill(t,u,y,mo);if(b.active.length)out.push({t,y,m:mo,b,amount:b.amount,overdue:cur})})});
+  return out}
+/* months of a membership: which are paid (current … +2) */
+const paidMonthsOf=(t,u)=>[0,1,2].map(k=>new Date(T0.getFullYear(),T0.getMonth()+k,1)).filter(d=>monthMembers(t,d.getFullYear(),d.getMonth()).includes(u)&&abonPaid(u,t.id,d.getFullYear(),d.getMonth())).map(d=>monthName(d));
 const whoAmI=()=>S.role==='coach'?coach(S.coachId).name:'Администратор';
 const memOn=(t,u,ds)=>t.members.includes(u)&&!(t.since&&t.since[u]>ds)&&!(t.until&&t.until[u]<ds);
 const payPending=pid=>{if(pid!=='p1')return false;const d=nextMonthStart();const mm=D.memberships.find(m=>m.uid==='p1'&&m.tpl==='t5');if(!mm||(mm.until&&mm.until<ymd(d)))return false;return !S.renewPaid&&S.payDueIn<=3&&monthBill(tpl('t5'),'p1',d.getFullYear(),d.getMonth()).active.length>0};
@@ -843,7 +854,7 @@ function tabbar(){
   const r=S.role==='new'?'player':S.role;
   const cur=S.stack[0].n;
   const badges={my:0,aHome:D.requests.length,aPay:S.role==='admin'?debts().length:0};
-  if(r==='player'){const ri=renewInfo();if(ri&&ri.need)badges.my=1}
+  if(r==='player'&&me()){if(abonDues(uid()).length)badges.my=1}
   return `<nav class="tabbar">${ROLE_TABS[r].map(([n,l,i])=>`<button class="${cur===n?'on':''}" data-a="tab" data-n="${n}">${ic(i)}<span>${l}</span>${badges[n]?`<span class="badge">${badges[n]}</span>`:''}</button>`).join('')}</nav>`;
 }
 const navbar=(title,act='')=>`<div class="navbar"><button class="back" data-a="back">${ic('chevL')}Назад</button><div class="ttl">${esc(title)}</div><div>${act}</div></div>`;
@@ -960,10 +971,11 @@ SCREENS.home=()=>{
   const recs=instancesRange(14).filter(x=>{const s=userState(x);return !s.locked&&!s.mine&&x.left>0}).slice(0,6);
   let pay='';
   if(ri&&ri.frozen){pay=`<div class="paybox" style="background:var(--pri-soft);border-color:#c9daf3"><div class="pt"><div class="pi" style="background:#c9daf3;color:var(--pri)">${ic('snow')}</div><div><b>Абонемент за ${ri.month} заморожен</b><div class="fs13 muted mt8" style="line-height:1.4">${esc(ri.t.title)}: все занятия этого месяца в заморозке, оплата не требуется. Место остаётся за вами.</div></div></div></div>`}
-  else if(ri&&ri.show&&ri.paid){pay=`<div class="paybox done"><div class="pt"><div class="pi">${ic('check')}</div><div><b>Абонемент за ${ri.month} оплачен</b><div class="fs13 muted">${esc(ri.t.title)} · €${ri.amount}${(()=>{const inv=D.payments.find(p=>p.uid==='p1'&&p.kind==='abon'&&p.date===ymd(T0));return inv?` · ${esc(inv.method.toLowerCase())} · счёт № ${inv.no}`:''})()}</div></div></div></div>`}
-  else if(ri&&ri.show){pay=`<div class="paybox"><div class="pt"><div class="pi">${ic('card')}</div><div style="flex:1"><div class="fs13 b" style="color:#92400e">Оплатите до ${dShort(ri.due)}</div><b>Абонемент за ${ri.month}: ${esc(ri.t.title)}</b><div class="amt mt8">€${ri.amount}<span class="fs13 muted" style="font-weight:500"> · ${ri.bill.active.length} ${plural(ri.bill.active.length,'занятие','занятия','занятий')}${ri.bill.frozen?`, ${ri.bill.frozen} в заморозке`:''}</span></div><div class="fs13 muted">${ri.bill.active.map(ds=>dShort(pYmd(ds))).join(' · ')}</div></div></div>
-      <button class="btn pri mt12" data-a="payRenew">${ic('card')}Оплатить картой</button></div>`}
-  else if(ri){pay=`<div class="paybox done" style="padding:10px 14px"><div class="pt" style="align-items:center"><div class="pi" style="width:30px;height:30px">${ic('check',16)}</div><div style="flex:1"><b class="fs14">Абонемент за ${ri.cur} оплачен</b><div class="fs13 muted">За ${ri.month} — до ${dShort(ri.due)}, напомним за 3 дня</div></div></div></div>`}
+  else{const dues=abonDues(u.id);const mem=D.memberships.filter(m=>m.uid===u.id&&tpl(m.tpl)&&!(m.until&&m.until<ymd(T0)));
+    if(dues.length)pay=dues.map(d=>`<div class="paybox"><div class="pt"><div class="pi">${ic('card')}</div><div style="flex:1"><div class="fs13 b" style="color:#92400e">${d.overdue?`Не оплачен ${monthName(new Date(d.y,d.m,1))}`:`Оплатите до ${dShort(new Date(d.y,d.m,1))}`}</div><b>Абонемент за ${MN[d.m].toLowerCase()}: ${esc(tLabel(d.t))}</b><div class="amt mt8">€${d.amount}<span class="fs13 muted" style="font-weight:500"> · ${d.b.active.length} ${plural(d.b.active.length,'занятие','занятия','занятий')}${d.b.frozen?`, ${d.b.frozen} в заморозке`:''}</span></div><div class="fs13 muted">${d.b.active.map(ds=>dShort(pYmd(ds))).join(' · ')}</div></div></div>
+      <button class="btn pri mt12" data-a="payAbon" data-tpl="${d.t.id}" data-y="${d.y}" data-m="${d.m}">${ic('card')}Оплатить картой</button></div>`).join('');
+    else if(mem.length){const nm=nextMonthStart();pay=`<div class="paybox done" style="padding:10px 14px">${mem.map(m=>{const t=tpl(m.tpl);const pm=paidMonthsOf(t,u.id);const nextPaid=abonPaid(u.id,t.id,nm.getFullYear(),nm.getMonth())||!monthMembers(t,nm.getFullYear(),nm.getMonth()).includes(u.id);
+      return `<div class="pt" style="align-items:center;padding:3px 0"><div class="pi" style="width:30px;height:30px">${ic(m.pay==='cash'&&!m.paid?'cash':'check',16)}</div><div style="flex:1"><b class="fs14">${m.pay==='cash'&&!m.paid?'Оплата на месте':pm.length?`Оплачено: ${pm.join(', ')}`:'Абонемент'}</b><div class="fs13 muted">${esc(tLabel(t))}${nextPaid?'':` · за ${monthName(nm)} — до ${dShort(nm)}`}</div></div></div>`}).join('')}</div>`}}
   const hero=nx?`<div class="hero"><div class="ball"></div><div class="lbl">Следующая тренировка</div>
       <div class="when">${relDay(nx.start)}, ${hm(nx.start)}</div><div class="what">${esc(nx.t.title)}</div>
       <div class="meta"><span>${ic('user')}${esc(coach(nx.t.coach).name)}</span><span>${ic('pin')}${VENUE.name}, ${esc(nx.t.court)}</span><span>${ic('clock')}${nx.t.dur} мин</span></div>
@@ -974,7 +986,7 @@ SCREENS.home=()=>{
       <button class="btn pri" data-a="tab" data-n="schedule">Выбрать тренировку</button></div>`;
   const groups=D.memberships.filter(m=>m.uid===u.id).map(m=>tpl(m.tpl)).filter(Boolean);
   return `<div class="content" data-scroll="home">
-    ${lgHead(`${greet}, ${esc(first)}`,longDay(new Date()),`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()||(ri&&ri.need)?'<span class="dot"></span>':''}</button>`)}
+    ${lgHead(`${greet}, ${esc(first)}`,longDay(new Date()),`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()||abonDues(u.id).length?'<span class="dot"></span>':''}</button>`)}
     ${pay}
     <div class="mt12">${hero}</div>
     ${(()=>{const more=myUpcoming().filter(x=>!userState(x).absent&&(!nx||x.id!==nx.id)).slice(0,3);return more.length?`<div class="sec-t"><h3>Мои записи</h3><button data-a="myUp">Все</button></div><div class="list">${more.map(x=>{const st=userState(x);return `<button class="li" data-a="openTr" data-id="${x.id}"><div class="lic">${ic(st.member?'repeat':'cal',18)}</div><div class="lt"><b>${relDay(x.start)}, ${hm(x.start)}</b><span>${esc(x.t.title)} · ${st.member?'постоянная группа':'разово'}</span></div><div class="lr">${ic('chevR')}</div></button>`}).join('')}</div>`:''})()}
@@ -1096,17 +1108,19 @@ SCREENS.my=()=>{
   const wlHtml=wl.length?`<div class="grp-h"><span>Лист ожидания</span><span>${wl.length}</span></div><div class="list">${wl.map(w=>{const x=w.type==='single'&&instById(w.ref);const t=w.type==='perm'?tpl(w.ref):x&&x.t;if(!t)return'';return `<div class="li"><div class="lic">${ic('hourglass',18)}</div><div class="lt"><b>${esc(t.title)}</b><span>${w.type==='perm'?`Постоянное место · ${WDA[t.weekday]} ${t.time}`:`Разово · ${relDay(x.start)}, ${hm(x.start)}`} · №${wlPos(w)} в очереди</span></div><button class="btn ghost sm" data-a="wlLeave" data-id="${w.id}">Выйти</button></div>`}).join('')}</div><div class="fs13 muted mt8" style="padding:0 4px">Когда место освободится, придёт push-уведомление — место держится за вами 2 часа.</div>`:'';
   if(S.my==='up')body=wlHtml+(up.length?grouped2(up):`<div class="empty"><div class="ei">${ic('cal',26)}</div>Вы ещё никуда не записаны<button class="btn pri sm mt12" style="margin:14px auto 0" data-a="tab" data-n="schedule">Записаться на тренировку</button></div>`);
   else if(S.my==='sub')body=mem.length?mem.map(m=>{const t=tpl(m.tpl);const isA=m.uid==='p1';const fz=freezeOf(t.id,m.uid);
-      const due=nextMonthStart();const pending=isA&&payPending('p1');
-      const nextDue=isA&&S.renewPaid?new Date(due.getFullYear(),due.getMonth()+1,1):due;const nb=monthBill(t,m.uid,nextDue.getFullYear(),nextDue.getMonth());
+      const myDues=abonDues(m.uid).filter(d=>d.t.id===t.id);const pm=paidMonthsOf(t,m.uid);
+      const months=[0,1,2,3].map(k=>new Date(T0.getFullYear(),T0.getMonth()+k,1)).filter(d=>monthMembers(t,d.getFullYear(),d.getMonth()).includes(m.uid));
+      const nextDue=months.find(d=>!abonPaid(m.uid,t.id,d.getFullYear(),d.getMonth())&&!(m.pay==='cash'&&!m.paid&&m.since.slice(0,7)===ymKey(d.getFullYear(),d.getMonth())));const nb=nextDue&&monthBill(t,m.uid,nextDue.getFullYear(),nextDue.getMonth());
+      const firstInst=instancesRange(35).find(x=>x.t.id===t.id);
       const reqSent=D.requests.some(r=>r.type==='freeze'&&r.pid===m.uid&&r.tpl===t.id);
       return `<div class="card mb8" style="margin-bottom:10px"><div class="between"><div><b style="font-size:17px">${esc(t.title)}</b><div class="muted fs14">${WDA[t.weekday]} · ${t.time} · ${esc(coach(t.coach).short)}</div></div><span class="tag lv">${lvRange(t)}</span></div>
       ${m.until?`<div class="note warn mt12">${ic('info')}<div>Участие в группе до <b>${fromDay(pYmd(m.until))}</b>. После этой даты постоянное место освобождается, списаний не будет.</div></div>`:''}
-      ${m.since>ymd(T0)?`<div class="note mt12">${ic('cal')}<div>Вы начнёте ходить с <b>${fromDay(pYmd(m.since))}</b> — ближайшие занятия до этой даты были заполнены.</div></div>`:''}
+      ${m.since>ymd(T0)?`<div class="note mt12">${ic('cal')}<div>Вы начнёте ходить с <b>${fromDay(pYmd(m.since))}</b>${firstInst&&ymd(firstInst.start)<m.since?' — ближайшие занятия до этой даты были заполнены':''}.</div></div>`:''}
       ${m.pay==='cash'&&!m.paid?`<div class="note warn mt12">${ic('cash')}<div>Оплата €${m.firstAmount??t.month} наличными — тренеру или администратору на первом занятии. Счёт появится после оплаты.</div></div>`:''}
       ${fz?`<div class="note mt12">${ic('snow')}<div><b>Заморожено ${dShort(pYmd(fz.from))} – ${dShort(pYmd(fz.to))}</b><br>Место сохранено за вами. Оплата за период не списывается. Пока вас нет, на ваше место могут записаться разово.</div></div>`:''}
-      <div class="facts"><div class="fact"><small>Стоимость</small><b>€${t.month} / мес</b></div><div class="fact"><small>За ${monthName(nextDue)} — до ${dShort(nextDue)}</small><b>€${nb.amount}${nb.frozen?` <span class="fs13 muted" style="font-weight:500">(${nb.frozen} в заморозке)</span>`:''}</b></div></div>
-      <div class="fs13 muted mt8">Оплата по календарным месяцам: в начале месяца — за все занятия этого месяца.</div>
-      ${pending?`<button class="btn pri mt12" data-a="payRenew">${ic('card')}Оплатить ${monthName(nextDue)} · €${nb.amount}</button>`:`<div class="fs13 muted mt12">${ic('card',14)} Карта •••• 4242 · напоминание за 3 дня до оплаты</div>`}
+      <div class="facts"><div class="fact"><small>Оплачено</small><b style="color:${pm.length?'var(--ok)':'var(--text)'}">${pm.length?pm.join(', '):'—'}</b></div><div class="fact"><small>${nextDue?`За ${monthName(nextDue)} — до ${dShort(nextDue)}`:'Следующая оплата'}</small><b>${nextDue?`€${nb.amount}${nb.frozen?` <span class="fs13 muted" style="font-weight:500">(${nb.frozen} в заморозке)</span>`:''}`:'—'}</b></div></div>
+      <div class="fs13 muted mt8">€${t.month} / мес · оплата по календарным месяцам: до 1-го числа — за все занятия месяца.</div>
+      ${myDues.length?myDues.map(d=>`<button class="btn pri mt12" data-a="payAbon" data-tpl="${t.id}" data-y="${d.y}" data-m="${d.m}">${ic('card')}Оплатить ${MN[d.m].toLowerCase()} · €${d.amount}</button>`).join(''):`<div class="fs13 muted mt12">${ic('card',14)} Карта •••• 4242 · напоминание за 3 дня до оплаты</div>`}
       ${m.until?'':`<button class="btn ghost sm mt8" style="color:var(--bad)" data-a="leaveGroup" data-id="${t.id}">Отказаться от постоянного места</button>`}
       ${fz?'':reqSent?`<div class="tag warn mt12">${ic('snow')}Запрос на заморозку ${(r=>r?fzRange(r.from,r.to):'')(D.requests.find(r=>r.type==='freeze'&&r.pid===m.uid&&r.tpl===t.id))} отправлен администратору</div>`:`<button class="btn ghost sm mt12" data-a="freezeReq" data-tpl="${t.id}">${ic('snow',16)}Попросить заморозку (отпуск, травма)</button>`}</div>`}).join('')
       :`<div class="empty"><div class="ei">${ic('repeat',26)}</div>Нет абонементов. Постоянное место можно занять в группах с пометкой «Пост. место».</div>`;
@@ -1114,7 +1128,7 @@ SCREENS.my=()=>{
   const bal=balanceH();
   return `<div class="content" data-scroll="my">${lgHead('Мои тренировки')}
     <button class="balrow" data-a="myCredits"><div class="lic">${ic('repeat',20)}</div><div class="lt"><small>Баланс отыгрышей</small><b>${fmtH(bal)}</b></div><span class="muted fs13">${bal?`до ${dShort(pYmd(credits()[0].exp))}`:'начисляется за отмену заранее'}</span>${ic('chevR')}</button>
-    <div class="seg"><button class="${S.my==='up'?'on':''}" data-a="mySeg" data-v="up">Записи</button><button class="${S.my==='sub'?'on':''}" data-a="mySeg" data-v="sub">Абонементы${ri&&ri.need?'<i class="sdot"></i>':''}</button><button class="${S.my==='pay'?'on':''}" data-a="mySeg" data-v="pay">Счета</button></div>
+    <div class="seg"><button class="${S.my==='up'?'on':''}" data-a="mySeg" data-v="up">Записи</button><button class="${S.my==='sub'?'on':''}" data-a="mySeg" data-v="sub">Абонементы${abonDues(u.id).length?'<i class="sdot"></i>':''}</button><button class="${S.my==='pay'?'on':''}" data-a="mySeg" data-v="pay">Счета</button></div>
     ${body}</div>`;
 };
 function grouped2(list){const m=new Map();list.forEach(x=>{const k=ymd(x.start);if(!m.has(k))m.set(k,[]);m.get(k).push(x)});
@@ -1773,10 +1787,14 @@ const A={
   },
   payM:e=>{S.sheet.m=e.dataset.v;render()},
   payDo:()=>{const sh=S.sheet;sh.busy=true;render();setTimeout(()=>{const a=sh.after;const amt=sh.amount;const title=sh.title;const m=sh.m==='wallet'?'Apple Pay':'Карта •••• 4242';
+    if(a.k==='abon'){const t=tpl(a.tpl);const inv=abonInvoice(uid(),t,a.y,a.m,m);setAbonPaid(uid(),t.id,a.y,a.m,inv.id);
+      openSheet('success',{title:'Оплачено',text:`Абонемент за ${MN[a.m].toLowerCase()} (${esc(tLabel(t))}) оплачен. Счёт № ${inv.no} — в разделе «Счета».`,inv:inv.id});return}
     if(a.k==='renew'){const ri=renewInfo();S.renewPaid=true;const inv=renewInvoice(ri,m);
       openSheet('success',{title:'Оплачено',text:`Абонемент за ${ri.month} оплачен. Счёт № ${inv.no} доступен в разделе «Счета».`,inv:inv.id})}
     else if(a.useH!=null)doBook(instById(a.id),'single','credit',{useH:a.useH,extra:a.extra,extraPay:'card',method:m});
     else doBook(instById(a.id),a.opt,'card',{method:m})},1300)},
+  payAbon:e=>{const t=tpl(e.dataset.tpl);const y=+e.dataset.y,mo=+e.dataset.m;const b=monthBill(t,uid(),y,mo);
+    openSheet('pay',{title:`Абонемент за ${MN[mo].toLowerCase()}: ${tLabel(t)}`,sub:`${b.active.length} ${plural(b.active.length,'занятие','занятия','занятий')}: ${b.active.map(ds=>dShort(pYmd(ds))).join(', ')}`,amount:b.amount,after:{k:'abon',tpl:t.id,y,m:mo}})},
   payRenew:()=>{const ri=renewInfo();openSheet('pay',{title:`Абонемент за ${ri.month}: ${ri.t.title}`,sub:`${ri.bill.active.length} ${plural(ri.bill.active.length,'занятие','занятия','занятий')}: ${ri.bill.active.map(ds=>dShort(pYmd(ds))).join(', ')}`,amount:ri.amount,after:{k:'renew',tpl:ri.t.id}})},
   cancelBooking:e=>{const x=instById(e.dataset.id);const b=D.bookings.find(b=>b.inst===x.id&&b.uid===uid()&&!b.cancelled);const back=refundHours(x,b);
     openSheet('confirm',{title:'Отменить запись?',text:!earlyEnough(x)?'До начала меньше 12 часов — по правилам школы часы на баланс не возвращаются.':back?`До начала больше 12 часов — <b>${fmtH(back)}</b> вернётся на баланс отыгрышей. Их можно потратить на другую тренировку в течение ${CREDIT_DAYS} дней.`:'Место освободится для других игроков. Оплата на месте не взималась.',yes:'doCancel',id:x.id,yesLabel:'Отменить запись',danger:true})},
