@@ -675,7 +675,8 @@ const nextMonthStart=()=>new Date(T0.getFullYear(),T0.getMonth()+1,1);
 const monthName=d=>MN[d.getMonth()].toLowerCase();
 const lvDate=d=>`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
 function monthDates(t,y,m,from){const out=[];const last=new Date(y,m+1,0).getDate();for(let d=1;d<=last;d++){const dt=new Date(y,m,d);if(wdi(dt)===t.weekday&&(!from||ymd(dt)>=from))out.push(ymd(dt))}return out}
-function monthBill(t,u,y,m,from){const all=monthDates(t,y,m);const dates=monthDates(t,y,m,from);const fz=D.freezes.filter(f=>f.tpl===t.id&&f.uid===u);
+const isClosed=ds=>D.closures.some(c=>ds>=c.from&&ds<=c.to);
+function monthBill(t,u,y,m,from){const all=monthDates(t,y,m);const dates=monthDates(t,y,m,from).filter(ds=>!isClosed(ds)&&!(t.since&&t.since[u]>ds)&&!(t.until&&t.until[u]<ds));const fz=D.freezes.filter(f=>f.tpl===t.id&&f.uid===u);
   const active=dates.filter(ds=>!fz.some(f=>ds>=f.from&&ds<=f.to));return{all,dates,active,frozen:dates.length-active.length,amount:Math.round(t.month*active.length/Math.max(1,all.length))}}
 const ymKey=(y,m)=>`${y}-${String(m+1).padStart(2,'0')}`;
 function abonPaid(u,tid,y,m){const nm=nextMonthStart();if(u==='p1'&&tid==='t5'&&y===nm.getFullYear()&&m===nm.getMonth())return S.renewPaid;return !!D.abonPaid[`${u}|${tid}|${ymKey(y,m)}`]}
@@ -1599,16 +1600,16 @@ function sheet(){
   case 'rmPl':{const x=instById(s.inst);const t=x.t;const pl=player(s.pid);const isMem=memOn(t,pl.id,ymd(x.start));const b=x.singles.find(b=>b.uid===pl.id);
       const h=t.dur/60;const nm=new Date(x.start.getFullYear(),x.start.getMonth()+1,1);
       const restDates=monthDates(t,x.start.getFullYear(),x.start.getMonth(),ymd(x.start));
-      const opt=s.opt||(isMem?'once':'single');const bPaid=b&&(b.pay==='card'||b.pay==='credit'||D.cashGot[b.id]);
-      const refundH=opt==='once'?h:opt==='now'?restDates.length*h:opt==='single'&&bPaid?h:0;
+      const opt=s.opt||(isMem?'once':'single');const onceH=abonPaid(pl.id,t.id,x.start.getFullYear(),x.start.getMonth())?h:0;
+      const refundH=opt==='once'?onceH:opt==='now'?paidSessionsFrom(t,pl.id,ymd(x.start))*h:opt==='month'?paidSessionsFrom(t,pl.id,ymd(nm))*h:opt==='single'?paidHours(x,b):0;
       return hd('Убрать игрока')+`<div class="sh-b">
       <div class="card row">${av(pl.name,colorOf(pl.id),'')}<div style="flex:1"><b>${esc(pl.name)}</b><div class="fs13 muted">${esc(t.title)} · ${longDay(x.start)}, ${hm(x.start)} · ${isMem?'постоянный':'разовый'}</div></div></div>
       ${isMem?`<div class="grp-h">Что сделать</div>
         <button class="opt ${opt==='once'?'on':''}" data-a="rmOpt" data-v="once"><span class="rd"></span><span class="ot"><b>Убрать только с этого занятия</b><p>${dShort(x.start)} — место освободится для разовой записи, в группе игрок остаётся</p></span></button>
-        <button class="opt ${opt==='now'?'on':''}" data-a="rmOpt" data-v="now"><span class="rd"></span><span class="ot"><b>Удалить из группы с этого занятия</b><p>Постоянное место освобождается с ${dShort(x.start)}; оставшиеся оплаченные занятия месяца (${restDates.length}) можно вернуть часами</p></span></button>
-        <button class="opt ${opt==='month'?'on':''}" data-a="rmOpt" data-v="month"><span class="rd"></span><span class="ot"><b>Удалить из группы с ${dShort(nm)}</b><p>Ходит до конца ${MG[x.start.getMonth()]} — оплаченный месяц не пропадает; за ${monthName(nm)} списание не будет</p></span></button>`
+        <button class="opt ${opt==='now'?'on':''}" data-a="rmOpt" data-v="now"><span class="rd"></span><span class="ot"><b>Удалить из группы с этого занятия</b><p>Постоянное место освобождается с ${dShort(x.start)}; оплаченные, но не посещённые занятия (${paidSessionsFrom(t,pl.id,ymd(x.start))}) можно вернуть часами</p></span></button>
+        <button class="opt ${opt==='month'?'on':''}" data-a="rmOpt" data-v="month"><span class="rd"></span><span class="ot"><b>Удалить из группы с ${dShort(nm)}</b><p>Ходит до конца ${MG[x.start.getMonth()]} — оплаченный месяц не пропадает; за ${monthName(nm)} списание не будет${paidSessionsFrom(t,pl.id,ymd(nm))?` (уже оплаченные дальше занятия вернутся часами)`:''}</p></span></button>`
       :`<div class="note">${ic('info')}<div>Игрок будет убран с занятия ${dShort(x.start)}; место освободится для других.</div></div>`}
-      ${refundH?`<div class="list plain mt12"><div class="li"><div class="lt"><b>Вернуть ${fmtH(refundH)} на баланс отыгрышей</b><span>За оплаченные занятия, которые игрок не посетит</span></div><label class="switch"><input type="checkbox" ${s.refund!==false?'checked':''} onchange="S.sheet.refund=this.checked"><span></span></label></div></div>`:''}
+      ${refundH?`<div class="list plain mt12"><div class="li"><div class="lt"><b>Вернуть ${fmtH(refundH)} на баланс отыгрышей</b><span>Только за оплаченные занятия, которые игрок не посетит</span></div><label class="switch"><input type="checkbox" ${s.refund!==false?'checked':''} onchange="S.sheet.refund=this.checked"><span></span></label></div></div>`:''}
       <div class="field mt12"><label>Комментарий для игрока (необязательно)</label><input value="${esc(s.note||'')}" oninput="S.sheet.note=this.value" placeholder="Например: перевели в другую группу"></div>
       <button class="btn danger mt16" data-a="rmDo">${opt==='once'||opt==='single'?'Убрать с занятия':'Удалить из группы'}</button></div>`;}
   case 'addPl':{const x=instById(s.inst);const t=x.t;const inIds=participants(x).map(p=>p.id);
@@ -1634,12 +1635,14 @@ function sheet(){
           <button class="btn pri sm" style="width:100%" data-a="addPlNew">Создать и выбрать</button></div>`
           :`<button class="btn ghost mt12" data-a="addPlForm">${ic('plus',18)}Игрок без приложения</button>`}`}
       </div>`;}
-  case 'leave':{const t=tpl(s.tpl);const u=uid();const nm=nextMonthStart();const cur=instancesRange(35).filter(x=>x.t.id===t.id&&ymd(x.start)<ymd(nm)&&memOn(t,u,ymd(x.start)));const h=cur.filter(x=>abonPaid(u,t.id,x.start.getFullYear(),x.start.getMonth())).length*t.dur/60;
+  case 'leave':{const t=tpl(s.tpl);const u=uid();const nm=nextMonthStart();const cur=instancesRange(35).filter(x=>x.t.id===t.id&&ymd(x.start)<ymd(nm)&&memOn(t,u,ymd(x.start)));const nx=cur[0];
+      const h=(nx?paidSessionsFrom(t,u,ymd(nx.start)):paidSessionsFrom(t,u,ymd(nm)))*t.dur/60;const preH=paidSessionsFrom(t,u,ymd(nm))*t.dur/60;
+      const preMonths=[0,1,2].map(k=>new Date(nm.getFullYear(),nm.getMonth()+k,1)).filter(d=>abonPaid(u,t.id,d.getFullYear(),d.getMonth())).map(d=>monthName(d));
       return hd('Отказаться от места')+`<div class="sh-b">
       <div class="card"><b>${esc(t.title)}</b><div class="fs13 muted">${WDA[t.weekday]} в ${t.time} · ${esc(coach(t.coach).name)}</div></div>
       <div class="grp-h">С какого момента</div>
-      <button class="opt ${s.opt==='month'?'on':''}" data-a="leaveOpt" data-v="month"><span class="rd"></span><span class="ot"><b>Со следующего месяца</b><p>Ходите на все оплаченные занятия до конца ${MG[T0.getMonth()]}${cur.length?` (ещё ${cur.length}: ${cur.map(x=>x.start.getDate()).join(', ')})`:''}. С ${dShort(nm)} списаний не будет.</p></span></button>
-      <button class="opt ${s.opt==='now'?'on':''}" data-a="leaveOpt" data-v="now"><span class="rd"></span><span class="ot"><b>С ближайшего занятия</b><p>Место освобождается сразу${h?`, а оплаченные занятия этого месяца вернутся на баланс отыгрышей: <b>${fmtH(h)}</b>`:''}.</p></span></button>
+      <button class="opt ${s.opt==='month'?'on':''}" data-a="leaveOpt" data-v="month"><span class="rd"></span><span class="ot"><b>Со следующего месяца</b><p>Ходите на все оплаченные занятия до конца ${MG[T0.getMonth()]}${cur.length?` (ещё ${cur.length}: ${cur.map(x=>x.start.getDate()).join(', ')})`:''}. С ${dShort(nm)} списаний не будет.${preH?` <b>Уже оплаченные ${preMonths.join(', ')} вернутся на баланс отыгрышей: ${fmtH(preH)}.</b>`:''}</p></span></button>
+      <button class="opt ${s.opt==='now'?'on':''}" data-a="leaveOpt" data-v="now"><span class="rd"></span><span class="ot"><b>С ближайшего занятия</b><p>Место освобождается сразу${h?`, а все оплаченные и не посещённые занятия вернутся на баланс отыгрышей: <b>${fmtH(h)}</b>`:''}.</p></span></button>
       <div class="note mt8">${ic('info')}<div>Если нужен перерыв (отпуск, травма) — лучше «Попросить заморозку»: место останется за вами.</div></div>
       <button class="btn danger mt16" data-a="doLeave">Отказаться ${s.opt==='month'?'со следующего месяца':'с ближайшего занятия'}</button></div>`;}
   case 'billing':{const u=me();return hd('Данные для счёта')+`<div class="sh-b">
@@ -1800,10 +1803,11 @@ const A={
   leaveGroup:e=>openSheet('leave',{tpl:e.dataset.id,opt:'month'}),
   leaveOpt:e=>{S.sheet.opt=e.dataset.v;render()},
   doLeave:()=>{const s=S.sheet;const t=tpl(s.tpl);const u=uid();const nm=nextMonthStart();const nx=instancesRange(35).find(x=>x.t.id===t.id&&memOn(t,u,ymd(x.start)));
-    const until=s.opt==='now'&&nx?ymd(addD(nx.start,-1)):ymd(addD(nm,-1));t.until=t.until||{};t.until[u]=until;const ms=D.memberships.find(m=>m.tpl===t.id&&m.uid===u);if(ms)ms.until=until;
-    let h=0;if(s.opt==='now'&&nx){const rest=instancesRange(35).filter(x=>x.t.id===t.id&&ymd(x.start)<ymd(nm)&&ymd(x.start)>until&&abonPaid(u,t.id,x.start.getFullYear(),x.start.getMonth()));h=rest.length*t.dur/60;if(h)addCredit(nx,u,'Отказ от постоянного места',h)}
+    const until=s.opt==='now'&&nx?ymd(addD(nx.start,-1)):ymd(addD(nm,-1));const ms=D.memberships.find(m=>m.tpl===t.id&&m.uid===u);
+    const h=paidSessionsFrom(t,u,s.opt==='now'&&nx?ymd(nx.start):ymd(nm))*t.dur/60;if(h)addCredit(nx||instancesRange(35).find(x=>x.t.id===t.id),u,'Отказ от постоянного места',h);
+    t.until=t.until||{};t.until[u]=until;if(ms)ms.until=until;
     sendMsg({kind:'info',title:'Отказ от постоянного места',text:`${me().name} отказался(-ась) от места в «${t.title}» с ${dShort(addD(pYmd(until),1))}.`,toUids:[],by:'system'});
-    S.sheet=null;toast(s.opt==='now'?`Место освобождено с ${dShort(addD(pYmd(until),1))}${h?` · ${fmtH(h)} на балансе отыгрышей`:''}`:`Вы ходите до конца ${MG[T0.getMonth()]}, со следующего месяца списаний не будет`)},
+    S.sheet=null;toast(s.opt==='now'?`Место освобождено с ${dShort(addD(pYmd(until),1))}${h?` · ${fmtH(h)} на балансе отыгрышей`:''}`:`Вы ходите до конца ${MG[T0.getMonth()]}, со следующего месяца списаний не будет${h?` · уже оплаченное вернулось: ${fmtH(h)}`:''}`)},
   reqAccess:e=>{const t=tpl(e.dataset.id);D.requests.push({id:'r'+Date.now(),type:'access',pid:uid(),tpl:t.id,note:`Хочу попробовать «${t.title}»`});toast('Запрос отправлен. Ответ придёт push-уведомлением')},
   wlJoin:e=>{const type=e.dataset.type,ref=e.dataset.id;if(!wlOf(type,ref))D.waitlist.push({id:'w'+Date.now(),uid:uid(),type,ref,at:Date.now()});const w=wlOf(type,ref);toast(`Вы в листе ожидания (№${wlPos(w)}). Сообщим push-уведомлением, место будет держаться 2 часа`)},
   wlLeave:e=>{D.waitlist=D.waitlist.filter(w=>w.id!==e.dataset.id);toast('Вы вышли из листа ожидания')},
@@ -1818,8 +1822,8 @@ const A={
   closeDo:()=>{const c=S.cl;const aff=affectedBy(c.from,c.to);const ppl=new Set();
     aff.forEach(x=>{participants(x).forEach(p=>ppl.add(p.id));
       [S.newUid,'p1'].filter(Boolean).forEach(u=>{const st=userState(x,player(u));if(!player(u))return;
-        if(st.member&&!st.absent)addCredit(x,u,'Школа не работает');
-        if(st.booking){const b=st.booking;const need=x.t.dur/60;refundAlloc(b.alloc);const moneyH=b.pay==='card'?need:b.pay==='credit'&&b.extra&&b.extraPay==='card'?need-(b.useH||0):0;if(moneyH>0)addCredit(x,u,'Школа не работает',moneyH);b.cancelled=true;const inv=invOfBooking(b);if(inv&&!inv.paid)inv.cancelled=true}})});
+        if(st.member&&!st.absent&&abonPaid(u,x.t.id,x.start.getFullYear(),x.start.getMonth()))addCredit(x,u,'Школа не работает');
+        if(st.booking){const b=st.booking;refundAlloc(b.alloc);const moneyH=paidHours(x,b)-(b.useH||0);if(moneyH>0)addCredit(x,u,'Школа не работает',moneyH);b.cancelled=true;const inv=invOfBooking(b);if(inv&&!inv.paid)inv.cancelled=true}})});
     const range=c.from===c.to?fromDay(pYmd(c.from)):fzRange(c.from,c.to);
     sendMsg({by:'admin',kind:'closed',title:`${range}: школа не работает`,text:`${c.reason?c.reason+'. ':''}Ваши тренировки в эти дни отменены. Оплаченные занятия переведены в отыгрыши — часы уже на балансе.`,toUids:[...ppl],aud:'Участники отменённых занятий'});
     D.closures.push({id:'c'+Date.now(),from:c.from,to:c.to,reason:c.reason,n:aff.length,ppl:ppl.size});S.cl=null;
@@ -1830,17 +1834,18 @@ const A={
   rmDo:()=>{const s=S.sheet;const x=instById(s.inst);const t=x.t;const pl=player(s.pid);const isMem=memOn(t,pl.id,ymd(x.start));const b=x.singles.find(b=>b.uid===pl.id);
     const opt=s.opt||(isMem?'once':'single');const refund=s.refund!==false;const h=t.dur/60;const who=S.role==='coach'?coach(S.coachId).name:'Администратор';const note=s.note?` Комментарий: ${s.note}`:'';let msg='';
     if(opt==='single'){
-      if(b){b.cancelled=true;const inv=invOfBooking(b);const paid=b.pay==='card'||b.pay==='credit'||D.cashGot[b.id];
-        if(refund&&paid){refundAlloc(b.alloc);const moneyH=b.pay==='credit'?(b.extra&&(b.extraPay==='card'||D.cashGot[b.id])?h-(b.useH||0):0):h;if(moneyH>0)addCredit(x,pl.id,'Отмена тренером',moneyH);if(inv)inv.refundH=h}
+      if(b){const ph=paidHours(x,b);b.cancelled=true;const inv=invOfBooking(b);
+        if(refund&&ph>0){refundAlloc(b.alloc);const moneyH=ph-(b.useH||0);if(moneyH>0)addCredit(x,pl.id,'Отмена тренером',moneyH);if(inv)inv.refundH=ph}
         else if(inv&&!inv.paid)inv.cancelled=true}
       else{(D.kicked[x.id]=D.kicked[x.id]||[]).push(pl.id)}
       msg=`${who} убрал(а) вас с занятия «${t.title}» ${dShort(x.start)} в ${hm(x.start)}.${refund&&b?' Оплата возвращена часами на баланс отыгрышей.':''}${note}`}
-    else if(opt==='once'){D.absences.push({inst:x.id,uid:pl.id});if(refund)addCredit(x,pl.id,'Отмена тренером');
-      msg=`${who}: на занятии «${t.title}» ${dShort(x.start)} вас не будет${refund?' — '+fmtH(h)+' на балансе отыгрышей':''}. В группе вы остаётесь.${note}`}
+    else if(opt==='once'){const paidM=abonPaid(pl.id,t.id,x.start.getFullYear(),x.start.getMonth());D.absences.push({inst:x.id,uid:pl.id});if(refund&&paidM)addCredit(x,pl.id,'Отмена тренером');
+      msg=`${who}: на занятии «${t.title}» ${dShort(x.start)} вас не будет${refund&&paidM?' — '+fmtH(h)+' на балансе отыгрышей':''}. В группе вы остаётесь.${note}`}
     else{const nm=new Date(x.start.getFullYear(),x.start.getMonth()+1,1);const until=opt==='now'?ymd(addD(x.start,-1)):ymd(addD(nm,-1));
+      const n=refund?paidSessionsFrom(t,pl.id,opt==='now'?ymd(x.start):ymd(nm)):0;
       t.until=t.until||{};t.until[pl.id]=until;const ms=D.memberships.find(m=>m.tpl===t.id&&m.uid===pl.id);if(ms)ms.until=until;
-      if(opt==='now'&&refund){const n=monthDates(t,x.start.getFullYear(),x.start.getMonth(),ymd(x.start)).length;if(n)addCredit(x,pl.id,'Удаление из группы',n*h)}
-      msg=`${who} удалил(а) вас из группы «${t.title}» ${opt==='now'?`с ${dShort(x.start)}`:`с ${dShort(nm)} — до конца ${MG[x.start.getMonth()]} вы ходите как обычно`}.${opt==='now'&&refund?' Оплаченные занятия до конца месяца возвращены часами.':''} Постоянное место освобождается.${note}`}
+      if(n)addCredit(x,pl.id,'Удаление из группы',n*h)
+      msg=`${who} удалил(а) вас из группы «${t.title}» ${opt==='now'?`с ${dShort(x.start)}`:`с ${dShort(nm)} — до конца ${MG[x.start.getMonth()]} вы ходите как обычно`}.${n?` Оплаченные, но не посещённые занятия возвращены часами: ${fmtH(n*h)}.`:''} Постоянное место освобождается.${note}`}
     sendMsg({kind:'info',title:'Изменение записи',text:msg,toUids:[pl.id]});S.sheet=null;
     toast(`${pl.name.split(' ')[0]}: ${opt==='single'||opt==='once'?'убран(а) с занятия':'удалён(а) из группы'} — игрок получил уведомление`)},
   attSet:e=>{const m=D.attendance[e.dataset.inst]=D.attendance[e.dataset.inst]||{};const v=e.dataset.v==='1';m[e.dataset.id]=m[e.dataset.id]===v?undefined:v;render()},
@@ -1859,7 +1864,7 @@ const A={
     else if(t.members.includes(pl.id)){if(t.until)delete t.until[pl.id];const ms=D.memberships.find(m=>m.tpl===t.id&&m.uid===pl.id);if(ms)delete ms.until;D.absences=D.absences.filter(a=>!(a.uid===pl.id&&a.inst===x.id));
       sendMsg({kind:'info',title:'Вы снова в группе',text:`Постоянное место в «${t.title}» за вами сохранено, ${WDA[t.weekday]} в ${t.time}.`,toUids:[pl.id]})}
     else{if(!(t.month&&x.permFree>0)){toast('Постоянных мест нет');return}const sinceDs=ymd(x.start);const pb=monthBill(t,pl.id,x.start.getFullYear(),x.start.getMonth(),sinceDs);
-      t.members.push(pl.id);t.since=t.since||{};t.since[pl.id]=sinceDs;
+      t.members.push(pl.id);t.since=t.since||{};t.since[pl.id]=sinceDs;absorbSingles(t,pl.id,sinceDs);
       const inv=addInvoice({uid:pl.id,kind:'abon',sessions:pb.dates,title:`Абонемент за ${monthName(x.start)}: ${t.title}`,lines:[{name:`Постоянное место «${t.title}»`,detail:pb.dates.map(ds=>dShort(pYmd(ds))).join(', '),sum:pb.amount}],amount:pb.amount,method:paid?method:'Наличные на месте',paid:!!paid,markedBy:paid?'admin':undefined});
       D.memberships.push({tpl:t.id,uid:pl.id,since:sinceDs,pay:paid?'club':'cash',paid:!!paid,inv:inv.id,firstAmount:pb.amount});if(paid)setAbonPaid(pl.id,t.id,x.start.getFullYear(),x.start.getMonth(),inv.id);
       sendMsg({kind:'info',title:'Вас добавили в группу',text:`Постоянное место в «${t.title}», ${WDA[t.weekday]} в ${t.time}, с ${dShort(x.start)}.`,toUids:[pl.id]})}
@@ -1966,20 +1971,30 @@ function affectedBy(from,to){const days=Math.max(0,Math.round((pYmd(to)-T0)/DAY)
 function renewInvoice(ri,method,extra={}){const t=ri.t;const y=ri.due.getFullYear(),mo=ri.due.getMonth();
   return addInvoice({uid:'p1',kind:'abon',title:`Абонемент за ${ri.month}: ${t.title}`,sessions:ri.bill.active,period:{from:ymd(new Date(y,mo,1)),to:ymd(new Date(y,mo+1,0))},
     lines:[{name:`Абонемент «${t.title}» за ${ri.month}`,detail:ri.bill.active.map(ds=>dShort(pYmd(ds))).join(', '),sum:ri.amount}],amount:ri.amount,method,...extra})}
-function refundHours(x,b){ // hours that go back to the balance on an early cancel
-  if(!b||!earlyEnough(x))return 0;const need=x.t.dur/60;
+/* value of a single booking that was actually paid, in hours (card, cash already received, credit hours + paid top-up) */
+function paidHours(x,b){if(!b)return 0;const need=x.t.dur/60;
   if(b.pay==='card')return need;
-  if(b.pay==='credit')return (b.useH||0)+(b.extra&&b.extraPay==='card'?need-(b.useH||0):0);
-  return 0;
-}
+  if(b.pay==='cash')return D.cashGot[b.id]?need:0;
+  if(b.pay==='credit')return (b.useH||0)+(b.extra&&(b.extraPay==='card'||D.cashGot[b.id])?need-(b.useH||0):0);
+  return 0}
+function refundHours(x,b){return b&&earlyEnough(x)?paidHours(x,b):0} // hours back to the balance on an early cancel
+/* paid subscription sessions of a member from a date on (current and prepaid months), not frozen/closed/already refunded */
+function paidSessionsFrom(t,u,fromDs){let n=0;const d0=pYmd(fromDs);const fz=D.freezes.filter(f=>f.tpl===t.id&&f.uid===u);
+  for(let k=0;k<4;k++){const dt=new Date(d0.getFullYear(),d0.getMonth()+k,1);if(!abonPaid(u,t.id,dt.getFullYear(),dt.getMonth()))continue;
+    n+=monthDates(t,dt.getFullYear(),dt.getMonth(),fromDs).filter(ds=>!isClosed(ds)&&!fz.some(f=>ds>=f.from&&ds<=f.to)&&!D.absences.some(a=>a.uid===u&&a.inst===t.id+'_'+ds)).length}
+  return n}
+/* a new permanent member: single bookings in the same group from the start date are absorbed by the subscription */
+function absorbSingles(t,u,sinceDs){let h=0,n=0;D.bookings.filter(b=>b.uid===u&&!b.cancelled&&b.inst.startsWith(t.id+'_')&&b.inst.split('_')[1]>=sinceDs).forEach(b=>{const x=instById(b.inst);if(!x)return;
+    refundAlloc(b.alloc);const money=paidHours(x,b)-(b.useH||0);if(money>0)addCredit(x,u,'Вошло в абонемент',money);h+=paidHours(x,b);n++;b.cancelled=true;const inv=invOfBooking(b);if(inv){if(!inv.paid)inv.cancelled=true;else inv.refundH=paidHours(x,b)}});
+  return{h,n}}
 function doBook(x,opt,pay,o={}){
   const t=x.t;const m=o.method||'Карта •••• 4242';
   if(opt==='perm'){const st0=startInst(t)||x;const sinceDs=ymd(st0.start);const cash=pay==='cash';
-    t.members.push(uid());t.since=t.since||{};t.since[uid()]=sinceDs;
+    t.members.push(uid());t.since=t.since||{};t.since[uid()]=sinceDs;const abs=absorbSingles(t,uid(),sinceDs);
     const pb=monthBill(t,uid(),st0.start.getFullYear(),st0.start.getMonth(),sinceDs);const mo=st0.start.getMonth(),yy=st0.start.getFullYear();
     const inv=addInvoice({kind:'abon',title:`Абонемент за ${MN[mo].toLowerCase()}: ${t.title}`,sessions:pb.dates,period:{from:sinceDs,to:ymd(new Date(yy,mo+1,0))},lines:[{name:`Постоянное место «${t.title}» до конца ${MG[mo]}`,detail:pb.dates.map(ds=>dShort(pYmd(ds))).join(', '),sum:pb.amount}],amount:pb.amount,method:cash?'Наличные на месте':m,paid:!cash});
     D.memberships.push({tpl:t.id,uid:uid(),since:sinceDs,pay:cash?'cash':'card',paid:!cash,inv:inv.id,firstAmount:pb.amount});if(!cash)setAbonPaid(uid(),t.id,yy,mo,inv.id);
-    openSheet('success',{title:'Место за вами!',text:`Постоянное место в «${esc(t.title)}» — ${WDA[t.weekday]} в ${t.time}. <b>Первое занятие — ${longDay(st0.start).toLowerCase()}</b>${st0.id!==x.id?` (на ${dShort(x.start)} мест не было)`:''}. ${cash?`Оплата €${pb.amount} за ${MN[st0.start.getMonth()].toLowerCase()} (${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}) наличными на первом занятии.`:`Оплачено €${pb.amount} за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}.`} Дальше — €${t.month} за каждый календарный месяц, оплата до 1-го числа.`,inv:inv.id});return}
+    openSheet('success',{title:'Место за вами!',text:`Постоянное место в «${esc(t.title)}» — ${WDA[t.weekday]} в ${t.time}. <b>Первое занятие — ${longDay(st0.start).toLowerCase()}</b>${st0.id!==x.id?` (на ${dShort(x.start)} мест не было)`:''}. ${cash?`Оплата €${pb.amount} за ${MN[st0.start.getMonth()].toLowerCase()} (${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}) наличными на первом занятии.`:`Оплачено €${pb.amount} за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}.`} Дальше — €${t.month} за каждый календарный месяц, оплата до 1-го числа.${abs.n?` Ваша разовая запись в эту группу вошла в абонемент${abs.h?` — ${fmtH(abs.h)} возвращены на баланс отыгрышей`:''}.`:''}`,inv:inv.id});return}
   const b={id:'b'+Date.now(),inst:x.id,uid:uid(),pay};
   const line={name:`Разовая тренировка «${t.title}»`,detail:`${longDay(x.start)}, ${hm(x.start)} · ${t.dur} мин · ${VENUE.name}, ${t.court}`,sum:t.price};
   let inv=null,txt='';
