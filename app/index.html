@@ -604,19 +604,19 @@ function seedData(){
   ];
   const T=(id,weekday,time,dur,level,coach,court,cap,perm,members,suffix='')=>({id,repeat:true,weekday,time,dur,level,lvMin:CATS[level].min,lvMax:CATS[level].max,title:CATS[level].name+suffix,coach,court,cap,perm,members,price:priceFor(dur),month:monthFor(dur)});
   const tpls=[
-   T('t1',0,'08:00',90,'adv','c2','Корт 2',6,4,['p4','p13','p10'],' · утро'),
-   T('t2',0,'19:00',60,'zero','c1','Корт 3',6,6,['p6','p12']),
-   T('t3',1,'18:00',90,'mid','c1','Корт 1',6,6,['p7','p14','p2','p5','p11']),
-   T('t4',1,'20:00',60,'beg','c2','Корт 2',6,6,['p3','p8','p16']),
+   T('t1',0,'08:00',90,'adv','c2','Корт 2',4,3,['p4','p13','p10'],' · утро'),
+   T('t2',0,'19:00',60,'zero','c1','Корт 3',4,4,['p6','p12']),
+   T('t3',1,'18:00',90,'mid','c1','Корт 1',4,4,['p7','p14','p2','p5']),
+   T('t4',1,'20:00',60,'beg','c2','Корт 2',4,4,['p3','p8','p16']),
    T('t6',2,'08:00',60,'beg','c2','Корт 3',4,4,['p16'],' · утро'),
-   T('t5',2,'19:00',90,'mid','c1','Корт 1',6,5,['p1','p5','p7']),
-   T('t7',3,'07:30',60,'mid','c2','Корт 2',5,4,['p14','p7','p5','p2'],' · до работы'),
-   T('t8',3,'19:30',90,'adv','c2','Корт 1',6,6,['p9','p15','p13','p4','p10']),
-   T('t9',4,'18:00',60,'zero','c1','Корт 3',6,6,['p6']),
-   T('t10',4,'19:30',90,'beg','c1','Корт 1',6,6,['p3','p8','p11']),
-   T('t11',5,'10:00',90,'mid','c1','Корт 1',6,4,['p2']),
-   T('t12',5,'12:00',60,'zero','c2','Корт 2',6,6,[]),
-   T('t13',6,'11:00',90,'adv','c1','Корт 2',6,4,['p9']),
+   T('t5',2,'19:00',90,'mid','c1','Корт 1',4,4,['p1','p5','p7']),
+   T('t7',3,'07:30',60,'mid','c2','Корт 2',4,4,['p14','p7','p5','p2'],' · до работы'),
+   T('t8',3,'19:30',90,'adv','c2','Корт 1',4,4,['p9','p15','p13','p4']),
+   T('t9',4,'18:00',60,'zero','c1','Корт 3',4,4,['p6']),
+   T('t10',4,'19:30',90,'beg','c1','Корт 1',4,4,['p3','p8','p11']),
+   T('t11',5,'10:00',90,'mid','c1','Корт 1',4,3,['p2']),
+   T('t12',5,'12:00',60,'zero','c2','Корт 2',4,4,[]),
+   T('t13',6,'11:00',90,'adv','c1','Корт 2',4,3,['p9']),
   ];
   // Anna: permanent spot in t5 + one single booking on the nearest Saturday
   let sat=T0;while(wdi(sat)!==5)sat=addD(sat,1);
@@ -861,6 +861,7 @@ function instancesRange(days=56){
   }
   return out.sort((a,b)=>a.start-b.start);
 }
+const GROUP_CAP=4; // every group is 4 players
 function mkInst(t,start){
   const id=t.id+'_'+ymd(start);
   const ds0=ymd(start);const members=t.members.filter(u=>memOn(t,u,ds0)).length;
@@ -1491,7 +1492,7 @@ SCREENS.aTrain=()=>{
 };
 SCREENS.aTplEdit=(p)=>{
   const isNew=p.id==='new';
-  const t=isNew?{title:'',level:'mid',coach:'c1',weekday:wdi(addD(T0,1)),time:'18:00',dur:90,court:'Корт 1',cap:6,perm:4,price:priceFor(90),month:monthFor(90),repeat:true,members:[]}:tpl(p.id);
+  const t=isNew?{title:'',level:'mid',coach:'c1',weekday:wdi(addD(T0,1)),time:'18:00',dur:90,court:'Корт 1',cap:GROUP_CAP,perm:GROUP_CAP,price:priceFor(90),month:monthFor(90),repeat:true,members:[]}:tpl(p.id);
   const next=isNew?[]:instancesRange(21).filter(x=>x.t.id===t.id).slice(0,3);
   return `${navbar(isNew?'Новая тренировка':'Редактирование',`<button class="act" data-a="saveTpl" data-id="${p.id}">Готово</button>`)}<div class="content no-tab" data-scroll="te${p.id}">
     <div class="field"><label>Название</label><input id="eTitle" value="${esc(t.title)}" placeholder="По умолчанию — название уровня"></div>
@@ -1504,7 +1505,7 @@ SCREENS.aTplEdit=(p)=>{
     <div class="f2 f-group"><div class="field"><label>Длительность</label><select id="eDur" onchange="document.getElementById('ePrice').value=priceFor(+this.value);document.getElementById('eMonth').value=monthFor(+this.value)">${[60,90,120].map(d=>`<option ${t.dur===d?'selected':''} value="${d}">${d} минут</option>`).join('')}</select></div>
       <div class="field"><label>Корт</label><select id="eCourt">${['Корт 1','Корт 2','Корт 3'].map(c=>`<option ${t.court===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
     <div class="grp-h">Места и цены</div>
-    <div class="f2 f-group"><div class="field"><label>Всего мест</label><input id="eCap" type="number" inputmode="numeric" value="${t.cap}"></div><div class="field"><label>Из них постоянных</label><input id="ePerm" type="number" inputmode="numeric" value="${t.perm}"></div></div>
+    <div class="f2 f-group"><div class="field"><label>Мест в группе</label><input id="eCap" type="number" value="${GROUP_CAP}" disabled></div><div class="field"><label>Из них постоянных</label><input id="ePerm" type="number" inputmode="numeric" value="${t.perm}"></div></div>
     <div class="f2 f-group"><div class="field"><label>Разово, €</label><input id="ePrice" type="text" inputmode="numeric" value="${t.price}" ${INT_INPUT}></div><div class="field"><label>Абонемент в месяц, €</label><input id="eMonth" type="text" inputmode="numeric" value="${t.month||''}" placeholder="—" ${INT_INPUT}></div></div>
     <div class="note mt8">${ic('info')}<div>Цены подставляются из общих тарифов по длительности (сейчас €${fmtE(PRICES.s60)} / 60 мин и €${fmtE(PRICES.s90)} / 90 мин) — для этой группы их можно изменить. Оплата картой или наличными на месте.</div></div>
     ${next.length?`<div class="grp-h">Ближайшие занятия</div><div class="list">${next.map(x=>`<button class="li" data-a="go" data-n="cSession" data-id="${x.id}"><div class="lic">${ic('cal',18)}</div><div class="lt"><b>${relDay(x.start)}, ${hm(x.start)}</b><span>Участники и посещаемость</span></div><div class="lr">${participants(x).length}/${t.cap}${ic('chevR')}</div></button>`).join('')}</div>`:''}
@@ -2160,7 +2161,7 @@ const A={
   saveTpl:e=>{
     const v=id=>document.getElementById(id).value;
     const level=v('eLevel');const title=v('eTitle').trim()||CATS[level].name;const lvMin=CATS[level].min,lvMax=CATS[level].max;
-    const cap=Math.max(1,+v('eCap')||1);const perm=Math.min(cap,Math.max(0,+v('ePerm')||0));
+    const cap=GROUP_CAP;const perm=Math.min(cap,Math.max(0,+v('ePerm')||0));
     const data={title,level,coach:v('eCoach'),repeat:document.getElementById('eRepeat').checked,weekday:+v('eWd'),time:v('eTime')||'18:00',dur:+v('eDur'),court:v('eCourt'),lvMin,lvMax,cap,perm,price:intE(v('ePrice')),month:intE(v('eMonth'))};
     if(!data.repeat){let d=addD(T0,1);while(wdi(d)!==data.weekday)d=addD(d,1);data.date=ymd(d)}
     if(e.dataset.id==='new'){D.tpls.push({id:'t'+Date.now(),members:[],custom:true,...data});S.stack.pop();S.anim='pop';toast('Тренировка создана и появилась в расписании игроков')}
