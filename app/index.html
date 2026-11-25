@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
 :root{
-  --bg:#fffaf3;--card:#fcf1e2;--text:#133331;--muted:#6f6a5e;--muted2:#a89e8c;--line:#efe2cf;
+  --bg:#ffffff;--card:#fcf1e2;--text:#133331;--muted:#6f6a5e;--muted2:#a89e8c;--line:#efe2cf;
   --pri:#133331;--pri2:#1f4a46;--pri-soft:#f5e7d2;--ball:#f6ddb9;--ball-d:#bda26d;--gold:#bda26d;--brown:#8a6a3d;
   --ok:#16a34a;--ok-soft:#dcfce7;--warn:#d97706;--warn-soft:#fef3c7;--bad:#dc2626;--bad-soft:#fee2e2;
   --r:18px;
@@ -222,6 +222,12 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .ntrp-row b.n{flex:0 0 38px;font-size:17px;color:var(--pri)}
 .msg{background:#fff;border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 .msg.unread{box-shadow:inset 3px 0 0 var(--pri),0 1px 2px rgba(15,23,42,.04)}
+.msg:not(.unread){opacity:.78}
+.msg.lnk{cursor:pointer}
+.udot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px;vertical-align:1px}
+button.tag{border:0;font-family:inherit;cursor:pointer}
+.lnkbtn{background:none;border:0;color:var(--pri);font:inherit;font-weight:700;font-size:14px;padding:0;cursor:pointer}
+.icon-btn .cnt{position:absolute;top:2px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;border:2px solid #fff;box-sizing:content-box}
 .msg .mh{display:flex;gap:10px;align-items:flex-start}
 .msg .mi{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;background:var(--pri-soft);color:var(--pri)}
 .att{display:flex;gap:6px;margin-top:8px}
@@ -407,9 +413,14 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stro
 .opt,.qopt,.lang,.field{background:#fff}
 .lg-head .hsub{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
 .icon-btn{background:var(--pri-soft);color:var(--text);width:44px;height:44px}
-.brandbar{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 2px 6px}
+.brandbar{display:flex;align-items:flex-start;justify-content:space-between;padding:26px 2px 6px}
 .brandbar .bl{display:flex;flex-direction:column;align-items:flex-start}
 .brandbar img{height:58px;width:auto}
+.splash{position:absolute;inset:0;z-index:80;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;animation:spIn .5s ease both}
+.splash img{width:62%;max-width:260px;height:auto}
+.splash .ss{font-size:13px;letter-spacing:.42em;font-weight:700;color:var(--text);margin-left:.42em}
+.splash.out{opacity:0;transition:opacity .45s ease}
+@keyframes spIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 .brandbar .bs{font-size:10.5px;letter-spacing:.32em;font-weight:700;color:var(--text);margin:2px 0 0 4px}
 .hero{background:linear-gradient(150deg,#174641 0%,#0f302c 100%);border-radius:24px}
 .hero:before{display:none}
@@ -561,10 +572,22 @@ const catOf=r=>r<=1.5?'zero':r<=2.5?'beg':r<=3.5?'mid':'adv';
 const lvInfo=r=>CATS[catOf(r)];
 const lvRange=t=>{const c=CATS[t.level];return `${fmtR(c.min)}–${fmtR(c.max)}`};
 const VENUE={name:'Enri',full:'Теннисный клуб Enri',addr:'Kalnciema iela 207, Rīga',map:'https://www.google.com/maps/search/?api=1&query=Kalnciema+iela+207+Riga'};
-const PRICES0={s60:30,s90:45,s120:60,m60:120,m90:160,m120:200};
+const PRICES0={s60:30,s90:45,s120:60,m60:120,m90:180,m120:240,m60x2:230,m60x3:330};
 const PRICES={...PRICES0}; // admin can change these in «Тренировки» → «Цены»
 const priceFor=dur=>PRICES['s'+dur]??Math.round(dur/60*PRICES.s60);
 const monthFor=dur=>PRICES['m'+dur]??Math.round(dur/60*PRICES.m60);
+/* monthly price depends on how many 60-min groups a week the player has: 1× €120, 2× €230, 3× €330 (each further one costs like the 3rd).
+   The 1st group (by join date) costs the full price, every next one gets the difference: 120 → 110 → 100. */
+const TIER=n=>n<=0?0:n===1?PRICES.m60:n===2?PRICES.m60x2:PRICES.m60x3+(n-3)*(PRICES.m60x3-PRICES.m60x2);
+function permRank(t,u,y,m){const a=ymd(new Date(y,m,1)),b=ymd(new Date(y,m+1,0));
+  const gs=D.tpls.filter(g=>!g.deleted&&g.dur===60&&g.month&&(g===t||g.members.includes(u))&&!(g.since&&g.since[u]>b)&&!(g.until&&g.until[u]<a));
+  const key=g=>g.members.includes(u)?((g.since&&g.since[u])||''):'~';
+  gs.sort((p,q)=>key(p)<key(q)?-1:key(p)>key(q)?1:p.id<q.id?-1:1);return{r:gs.indexOf(t)+1,n:gs.length}}
+function monthPrice(t,u,y,m){if(!u||t.dur!==60||!t.month)return t.month;const {r}=permRank(t,u,y,m);if(r<=1)return t.month;
+  const disc=(r*PRICES.m60-TIER(r))-((r-1)*PRICES.m60-TIER(r-1));return Math.max(0,t.month-disc)}
+function mpOf(t,u){if(u===undefined)u=(S.role==='player'||S.role==='new')?uid():null;if(!u)return t.month;const st=startInst(t);const d=st&&!t.members.includes(u)?st.start:new Date();return monthPrice(t,u,d.getFullYear(),d.getMonth())}
+function tierNote(t,u){const p=mpOf(t,u);if(!t.month||p>=t.month)return '';const st=startInst(t);const d=st&&!t.members.includes(u||uid())?st.start:new Date();const {r}=permRank(t,u||uid(),d.getFullYear(),d.getMonth());
+  return `<div class="note mt8">${ic('repeat')}<div><b>${r} ${plural(r,'раз','раза','раз')} в неделю по 60 мин — €${TIER(r)}/мес</b> вместо €${r*PRICES.m60}. Эта группа обойдётся в €${p}/мес вместо €${t.month}.</div></div>`}
 
 const QUESTIONS=[
  {q:'Как давно и как часто вы играете?',o:['Ещё ни разу не играл(а)','Пробовал(а) несколько раз','Играю нерегулярно, меньше года','Регулярно 1–3 года','Регулярно больше 3 лет']},
@@ -585,7 +608,7 @@ function seedAudit(){const h=(d,hh,mm)=>{const x=addD(T0,-d);x.setHours(hh,mm);r
   {at:h(1,21,14),role:'player',who:'Ольга Иванова',action:'Не придёт',text:'«Средний уровень», ближайший вторник 18:00 — место открыто для разовой записи'},
   {at:h(1,18,2),role:'player',who:'Сергей Орлов',action:'Новый запрос на заморозку',text:'«Средний уровень» (ср 19:00), отпуск'},
   {at:h(1,16,40),role:'coach',who:'Анастасия',action:'Предложение уровня',text:'Павел Морозов: скрытый рейтинг 3.0'},
-  {at:h(2,10,5),role:'admin',who:'Администратор',action:'Отметил(а) оплату',text:'Кристапс Лиепиньш: абонемент · €160 (карта в клубе)'},
+  {at:h(2,10,5),role:'admin',who:'Администратор',action:'Отметил(а) оплату',text:'Кристапс Лиепиньш: абонемент · €180 (карта в клубе)'},
   {at:h(3,9,30),role:'player',who:'Эвия Круминя',action:'Новая запись',text:'«Новички до года», разово · оплата на месте'},
   {at:h(4,20,11),role:'player',who:'Анна Лапиня',action:'Оплата в приложении',text:'Разовое: «Средний уровень» · €45'},
 ]}
@@ -631,9 +654,9 @@ function seedData(){
   const satX=`${longDay(sat)}, 10:00 · 90 мин · Enri, Корт 1`;
   const payments=[
    {id:'i1041',no:'TNL-2026-01041',uid:'p1',date:ymd(addD(T0,-1)),title:'Разовое: Средний уровень',bid:'b1',kind:'single',sessions:[ymd(sat)],lines:[{name:'Разовая тренировка «Средний уровень»',detail:satX,sum:45}],amount:45,method:'Карта •••• 4242',paid:true},
-   {id:'i1032',no:'TNL-2026-01032',uid:'p1',date:ymd(new Date(T0.getFullYear(),T0.getMonth(),0)),kind:'abon',sessions:wedsOf(T0.getFullYear(),T0.getMonth()),title:`Абонемент за ${MN[T0.getMonth()].toLowerCase()}: Средний уровень`,lines:[{name:'Абонемент «Средний уровень»',detail:'Каждую среду 19:00 · 90 мин · 1 месяц',sum:160}],amount:160,method:'Карта •••• 4242',paid:true},
+   {id:'i1032',no:'TNL-2026-01032',uid:'p1',date:ymd(new Date(T0.getFullYear(),T0.getMonth(),0)),kind:'abon',sessions:wedsOf(T0.getFullYear(),T0.getMonth()),title:`Абонемент за ${MN[T0.getMonth()].toLowerCase()}: Средний уровень`,lines:[{name:'Абонемент «Средний уровень»',detail:'Каждую среду 19:00 · 90 мин · 1 месяц',sum:180}],amount:180,method:'Карта •••• 4242',paid:true},
    {id:'i1027',no:'TNL-2026-01027',uid:'p1',date:'2026-10-11',kind:'single',sessions:['2026-10-11'],title:'Разовое: Средний уровень',lines:[{name:'Разовая тренировка «Средний уровень»',detail:'Суббота, 11 октября, 10:00 · 90 мин · Enri, Корт 1',sum:45}],amount:45,method:'Наличные',paid:true},
-   {id:'i1011',no:'TNL-2026-01011',uid:'p1',date:ymd(new Date(T0.getFullYear(),T0.getMonth()-1,0)),kind:'abon',sessions:wedsOf(T0.getFullYear(),T0.getMonth()-1),title:`Абонемент за ${MN[(T0.getMonth()+11)%12].toLowerCase()}: Средний уровень`,lines:[{name:'Абонемент «Средний уровень»',detail:'Каждую среду 19:00 · 90 мин · 1 месяц',sum:160}],amount:160,method:'Карта •••• 4242',paid:true},
+   {id:'i1011',no:'TNL-2026-01011',uid:'p1',date:ymd(new Date(T0.getFullYear(),T0.getMonth()-1,0)),kind:'abon',sessions:wedsOf(T0.getFullYear(),T0.getMonth()-1),title:`Абонемент за ${MN[(T0.getMonth()+11)%12].toLowerCase()}: Средний уровень`,lines:[{name:'Абонемент «Средний уровень»',detail:'Каждую среду 19:00 · 90 мин · 1 месяц',sum:180}],amount:180,method:'Карта •••• 4242',paid:true},
   ];
   // make-up credits ("отыгрыши", in hours) and group freezes
   const credits=[{id:'k1',uid:'p1',hours:1,left:1,src:'Средний уровень · до работы · '+dShort(addD(T0,-12)),why:'Отмена записи',exp:ymd(addD(T0,48))}];
@@ -642,15 +665,15 @@ function seedData(){
   const messages=[
    {id:'m1',kind:'event',title:'Новогодний турнир Tenly',text:'Парный турнир для всех уровней, Enri. После игр — чай и награждение. Отметьтесь, придёте ли вы.',event:{date:ymd(addD(T0,25)),time:'11:00',place:'Enri, Kalnciema iela 207'},to:'all',toUids:['p1','p2','p3','p4','p5','p7','p8','p9','p10','p11','p13','p14','p15'],at:ymd(addD(T0,-1)),rsvp:{p2:'yes',p4:'yes',p7:'yes',p9:'no',p13:'yes'},read:{}},
    {id:'m3',kind:'info',staff:true,title:'Ольга Иванова не придёт',text:'Ольга Иванова отметила «Не приду» на ближайшее занятие «Средний уровень» (вт 18:00).',toUids:['c1'],at:ymd(addD(T0,-1)),read:{},rsvp:{}},
-   {id:'m4',kind:'info',staff:true,title:'Новый запрос на заморозку',text:'Сергей Орлов просит заморозить место в группе «Средний уровень» (ср 19:00) на время отпуска.',toUids:['a1'],at:ymd(addD(T0,-1)),read:{},rsvp:{}},
+   {id:'m4',kind:'info',staff:true,title:'Новый запрос на заморозку',text:'Сергей Орлов просит заморозить место в группе «Средний уровень» (ср 19:00) на время отпуска.',link:{req:'r3'},toUids:['a1'],at:ymd(addD(T0,-1)),read:{},rsvp:{}},
    {id:'m2',kind:'info',title:'Новые группы с января',text:'С января открываем вторую утреннюю группу «Средний уровень». Запись уже открыта в приложении.',to:'all',toUids:['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12','p13','p14','p15','p16'],at:ymd(addD(T0,-3)),read:{p1:true},rsvp:{}},
   ];
   const dd=n=>ymd(addD(T0,-n));
   payments.push(
-   {id:'i1040',no:'TNL-2026-01040',uid:'p2',date:dd(1),title:'Абонемент: Средний уровень',lines:[{name:'Абонемент «Средний уровень»',detail:'Каждый вторник 18:00 · 90 мин · 1 месяц',sum:160}],amount:160,method:'Карта •••• 1881',paid:true},
-   {id:'i1039',no:'TNL-2026-01039',uid:'p4',date:dd(2),title:'Абонемент: Продвинутые любители · утро',lines:[{name:'Абонемент «Продвинутые любители · утро»',detail:'Каждый понедельник 08:00 · 90 мин · 1 месяц',sum:160}],amount:160,method:'Карта в клубе',paid:true,markedBy:'admin'},
+   {id:'i1040',no:'TNL-2026-01040',uid:'p2',date:dd(1),title:'Абонемент: Средний уровень',lines:[{name:'Абонемент «Средний уровень»',detail:'Каждый вторник 18:00 · 90 мин · 1 месяц',sum:180}],amount:180,method:'Карта •••• 1881',paid:true},
+   {id:'i1039',no:'TNL-2026-01039',uid:'p4',date:dd(2),title:'Абонемент: Продвинутые любители · утро',lines:[{name:'Абонемент «Продвинутые любители · утро»',detail:'Каждый понедельник 08:00 · 90 мин · 1 месяц',sum:180}],amount:180,method:'Карта в клубе',paid:true,markedBy:'admin'},
    {id:'i1038',no:'TNL-2026-01038',uid:'p8',date:dd(3),title:'Разовое: Новички до года',lines:[{name:'Разовая тренировка «Новички до года»',detail:'60 мин · Enri, Корт 2',sum:30}],amount:30,method:'Наличные',paid:true,markedBy:'admin'},
-   {id:'i1037',no:'TNL-2026-01037',uid:'p13',date:dd(5),title:'Абонемент: Продвинутые любители',lines:[{name:'Абонемент «Продвинутые любители»',detail:'Каждый четверг 19:30 · 90 мин · 1 месяц',sum:160}],amount:160,method:'Банковский перевод',paid:true,markedBy:'admin'},
+   {id:'i1037',no:'TNL-2026-01037',uid:'p13',date:dd(5),title:'Абонемент: Продвинутые любители',lines:[{name:'Абонемент «Продвинутые любители»',detail:'Каждый четверг 19:30 · 90 мин · 1 месяц',sum:180}],amount:180,method:'Банковский перевод',paid:true,markedBy:'admin'},
    {id:'i1036',no:'TNL-2026-01036',uid:'p6',date:dd(6),title:'Абонемент: Новички без опыта',lines:[{name:'Абонемент «Новички без опыта»',detail:'Каждый понедельник 19:00 · 60 мин · 1 месяц',sum:120}],amount:120,method:'Apple Pay',paid:true},
   );
   const debts=[
@@ -749,7 +772,7 @@ function inboxId(){return S.role==='coach'?S.coachId:S.role==='admin'?'a1':uid()
 /* every notable action goes to the audit trail; admin is notified about everything, coaches about their own groups */
 function actor(o={}){const role=o.system?'system':S.role==='new'?'player':S.role;return{role,who:role==='system'?'Система':role==='player'?((me()||{}).name||'Игрок'):role==='coach'?coach(S.coachId).name:'Администратор'}}
 function staffMsg(to,title,text,o={}){const a=actor({system:o.system||title==='Лист ожидания'});D.audit.unshift({at:Date.now(),role:a.role,who:a.who,action:title,text});
-  const self=inboxId();const rcpt=[...new Set(['a1',...to])].filter(u=>u&&u!==self);if(rcpt.length)sendMsg({kind:'info',staff:true,title,text:(a.role==='player'||a.role==='coach')&&!String(text).startsWith(a.who)?`${a.who}: ${text}`:text,toUids:rcpt})}
+  const self=inboxId();const rcpt=[...new Set(['a1',...to])].filter(u=>u&&u!==self);if(rcpt.length)sendMsg({kind:'info',staff:true,link:o.link,title,text:(a.role==='player'||a.role==='coach')&&!String(text).startsWith(a.who)?`${a.who}: ${text}`:text,toUids:rcpt})}
 /* staff/admin and extra player actions are logged centrally from the click handler */
 const AUD={
   wlJoin:c=>{const x=c.ds.type==='single'?instById(c.ds.id):null;const t=x?x.t:tpl(c.ds.id);return t&&['Встал(а) в лист ожидания',`«${t.title}» ${x?`${dShort(x.start)} ${hm(x.start)}`:'(постоянное место)'}`,t.coach]},
@@ -773,14 +796,16 @@ const AUD={
   closeDo:c=>['Нерабочие дни',`${c.sheet?'':''}${(D.closures.at(-1)||{}).from||''} – ${(D.closures.at(-1)||{}).to||''} ${(D.closures.at(-1)||{}).reason||''}`,null],
   closeUndo:c=>['Отменил(а) нерабочие дни','',null],
   msgSend:c=>{const m=D.messages[0];return m&&['Отправил(а) уведомление',`«${m.title}» · ${m.toUids.length} получателей`,null]},
-  savePrices:c=>['Изменил(а) цены',`разово €${PRICES.s60}/€${PRICES.s90}, абонемент €${PRICES.m60}/€${PRICES.m90}`,null],
+  savePrices:c=>['Изменил(а) цены',`разово €${PRICES.s60}/€${PRICES.s90}, абонемент €${PRICES.m60}/€${PRICES.m90}, 2×60 €${PRICES.m60x2}, 3×60 €${PRICES.m60x3}`,null],
   aCredit:c=>['Начислил(а) 1 ч отыгрыша',player(c.ds.id).name,null],
 };
 function audCtx(el){const ds={...el.dataset};const c={ds,sheet:S.sheet?{...S.sheet}:null};
   c.w=D.waitlist.find(w=>w.id===ds.id);if(c.w)c.wt=c.w.type==='perm'?tpl(c.w.ref):(instById(c.w.ref)||{}).t;
   c.r=D.requests.find(r=>r.id===ds.id);c.m=D.messages.find(m=>m.id===ds.id);if(c.sheet&&c.sheet.name==='markPaid')c.d=debtById(c.sheet.id);return c}
-function audAfter(a,c){const f=AUD[a];if(!f)return;let r;try{r=f(c)}catch(_){return}if(r)staffMsg([r[2]].filter(Boolean),r[0],r[1])}
-const isReceipt=p=>!!p&&['Наличные','Наличные на месте','Карта в клубе'].includes(p.method); // paid on site → cash-register receipt, no invoice
+function audAfter(a,c){const f=AUD[a];if(!f)return;let r;try{r=f(c)}catch(_){return}const iOk=id=>{try{return typeof id==='string'&&/_\d{4}-\d\d-\d\d$/.test(id)&&!!instById(id)}catch(_){return false}};const inst=[c.sheet&&c.sheet.inst,c.ds&&c.ds.id].find(iOk);if(r)staffMsg([r[2]].filter(Boolean),r[0],r[1],inst?{link:{n:'cSession',id:inst}}:{})}
+const isReceipt=p=>!!p&&['Наличные','Наличные на месте','Карта в клубе','Банковский перевод'].includes(p.method); // paid outside the app → no invoice in the app
+const isTransfer=p=>!!p&&p.method==='Банковский перевод'; // invoice was already issued by the school outside the app
+const offNote=p=>isTransfer(p)?'Оплачено переводом по счёту школы — в приложении счёт не формируется':'Кассовый чек выдан в клубе';
 const intE=v=>parseInt(String(v??'').replace(/[.,].*$/,'').replace(/\D/g,''),10)||0; // whole euros only
 const INT_INPUT=`oninput="this.value=this.value.replace(/[.,].*$/,'').replace(/\\D/g,'')"`;
 const fmtE=n=>Number.isInteger(n)?String(n):(Math.round(n*100)/100).toFixed(2).replace('.',',');
@@ -818,7 +843,7 @@ const isClosed=ds=>D.closures.some(c=>ds>=c.from&&ds<=c.to);
 function monthBill(t,u,y,m,from){const all=monthDates(t,y,m);const dates=monthDates(t,y,m,from).filter(ds=>!isClosed(ds)&&!(t.since&&t.since[u]>ds)&&!(t.until&&t.until[u]<ds));const fz=D.freezes.filter(f=>f.tpl===t.id&&f.uid===u);
   const active=dates.filter(ds=>!fz.some(f=>ds>=f.from&&ds<=f.to));
   const sinceU=from||(t.since&&t.since[u]);const lateJoin=!!(sinceU&&all.length&&sinceU>all[0]&&sinceU<=all.at(-1)); // joined after the 1st session → single price per session (max = month price)
-  return{all,dates,active,frozen:dates.length-active.length,lateJoin,amount:lateJoin?Math.min(t.month,active.length*t.price):Math.round(t.month*active.length/Math.max(1,all.length))}}
+  return{all,dates,active,frozen:dates.length-active.length,lateJoin,amount:(mp=>lateJoin?Math.min(mp,active.length*t.price):Math.round(mp*active.length/Math.max(1,all.length)))(monthPrice(t,u,y,m))}}
 const ymKey=(y,m)=>`${y}-${String(m+1).padStart(2,'0')}`;
 function abonPaid(u,tid,y,m){const nm=nextMonthStart();if(u==='p1'&&tid==='t5'&&y===nm.getFullYear()&&m===nm.getMonth())return S.renewPaid;return !!D.abonPaid[`${u}|${tid}|${ymKey(y,m)}`]}
 function setAbonPaid(u,tid,y,m,inv){const nm=nextMonthStart();if(u==='p1'&&tid==='t5'&&y===nm.getFullYear()&&m===nm.getMonth())S.renewPaid=true;D.abonPaid[`${u}|${tid}|${ymKey(y,m)}`]=inv||true}
@@ -952,6 +977,7 @@ function grouped(list){
 
 /* ---------- render core ---------- */
 const root=document.getElementById('root');
+let SPLASH=true;setTimeout(()=>{if(SPLASH){SPLASH='out';render();setTimeout(()=>{SPLASH=false;render()},450)}},1700);
 function render(){
   try{checkWaitlist()}catch(_){}
   document.querySelectorAll('[data-scroll]').forEach(el=>S.scroll[el.dataset.scroll]=el.scrollTop);
@@ -961,6 +987,7 @@ function render(){
       ${screen()}
       ${S.sheet?`<div class="backdrop ${S.sheetAnim?'anim':''}" data-a="closeSheet"></div><div class="sheet ${S.sheetAnim?'anim':''}"><div class="grab"></div>${sheet().replace('<div class="sh-b"',`<div class="sh-b" data-scroll="sheet-${S.sheet.name}"`)}</div>`:''}
       ${S.toast?`<div class="toast ${S.toastAnim?'anim':''}">${ic('check')}<span>${S.toast}</span></div>`:''}
+      ${SPLASH?`<div class="splash ${SPLASH==='out'?'out':''}" data-a="skipSplash"><img src="tenly-logo.svg" alt="Tenly"><div class="ss">TENISA SKOLA</div></div>`:''}
       <div class="homebar"></div>
     </div></div>
     <button class="demo-fab" data-a="openDemo">ДЕМО</button></div>`;
@@ -1122,8 +1149,7 @@ SCREENS.home=()=>{
   let pay='';
   if(ri&&ri.frozen){pay=`<div class="paybox" style="background:var(--pri-soft);border-color:#c9daf3"><div class="pt"><div class="pi" style="background:#c9daf3;color:var(--pri)">${ic('snow')}</div><div><b>Абонемент за ${ri.month} заморожен</b><div class="fs13 muted mt8" style="line-height:1.4">${esc(ri.t.title)}: все занятия этого месяца в заморозке, оплата не требуется. Место остаётся за вами.</div></div></div></div>`}
   else{const dues=abonDues(u.id);const mem=D.memberships.filter(m=>m.uid===u.id&&tpl(m.tpl)&&!(m.until&&m.until<ymd(T0)));
-    if(dues.length)pay=dues.map(d=>`<div class="paybox"><div class="pt"><div class="pi">${ic('card')}</div><div style="flex:1"><div class="fs13 b" style="color:#92400e">${d.overdue?`Не оплачен ${monthName(new Date(d.y,d.m,1))}`:`Оплатите до ${dShort(new Date(d.y,d.m,1))}`}</div><b>Абонемент за ${MN[d.m].toLowerCase()}: ${esc(tLabel(d.t))}</b><div class="amt mt8">€${fmtE(d.amount)}<span class="fs13 muted" style="font-weight:500"> · ${d.b.active.length} ${plural(d.b.active.length,'занятие','занятия','занятий')}${d.b.frozen?`, ${d.b.frozen} в заморозке`:''}</span></div><div class="fs13 muted">${d.b.active.map(ds=>dShort(pYmd(ds))).join(' · ')}</div></div></div>
-      <button class="btn pri mt12" data-a="payAbon" data-tpl="${d.t.id}" data-y="${d.y}" data-m="${d.m}">${ic('card')}Оплатить картой</button></div>`).join('');
+    if(dues.length)pay=`<div class="paybox" style="padding:10px 14px">${dues.map(d=>`<div class="pt" style="align-items:center;padding:3px 0"><div class="pi" style="width:30px;height:30px">${ic('card',16)}</div><div style="flex:1;min-width:0"><b class="fs14">Абонемент за ${MN[d.m].toLowerCase()}</b><div class="fs13 muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tLabel(d.t))}</div><div class="fs13 b" style="color:#92400e">${d.overdue?`Не оплачен ${monthName(new Date(d.y,d.m,1))}`:`До ${dShort(new Date(d.y,d.m,1))}`} · ${d.b.active.length} ${plural(d.b.active.length,'занятие','занятия','занятий')}${d.b.frozen?`, ${d.b.frozen} в заморозке`:''}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none"><b style="font-size:17px">€${fmtE(d.amount)}</b><button class="btn pri sm" style="width:auto;padding:0 14px;height:32px" data-a="payAbon" data-tpl="${d.t.id}" data-y="${d.y}" data-m="${d.m}">Оплатить</button></div></div>`).join('')}</div>`;
     else if(mem.length){const nm=nextMonthStart();pay=`<div class="paybox done" style="padding:10px 14px">${mem.map(m=>{const t=tpl(m.tpl);const pm=paidMonthsOf(t,u.id);const nextPaid=abonPaid(u.id,t.id,nm.getFullYear(),nm.getMonth())||!monthMembers(t,nm.getFullYear(),nm.getMonth()).includes(u.id);
       return `<div class="pt" style="align-items:center;padding:3px 0"><div class="pi" style="width:30px;height:30px">${ic(m.pay==='cash'&&!m.paid?'cash':'check',16)}</div><div style="flex:1"><b class="fs14">${m.pay==='cash'&&!m.paid?'Оплата на месте':pm.length?`Оплачено: ${pm.join(', ')}`:'Абонемент'}</b><div class="fs13 muted">${esc(tLabel(t))}${nextPaid?'':` · за ${monthName(nm)} — до ${dShort(nm)}`}</div></div></div>`}).join('')}</div>`}}
   const hero=nx?`<div class="hero">${EMBLEM}<div class="lbl">Следующая тренировка</div>
@@ -1134,18 +1160,18 @@ SCREENS.home=()=>{
     :`<div class="card" style="text-align:center;padding:24px 18px"><div class="empty" style="padding:0"><div class="ei" style="background:var(--pri-soft)">${ic('ball',28)}</div></div>
       <b style="font-size:18px">У вас пока нет тренировок</b><p class="muted fs14" style="margin:6px 0 14px">Выберите занятие под ваш уровень NTRP ${fmtR(u.self)} — разово или на постоянной основе.</p>
       <button class="btn pri" data-a="tab" data-n="schedule">Выбрать тренировку</button></div>`;
-  const groups=D.memberships.filter(m=>m.uid===u.id).map(m=>tpl(m.tpl)).filter(Boolean);
+  const groups=D.tpls.filter(t=>!t.deleted&&t.members.includes(u.id));
   return `<div class="content" data-scroll="home">
-    <div class="brandbar"><div class="bl"><img src="tenly-logo.svg" alt="Tenly"><div class="bs">TENISA SKOLA</div></div><button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()||abonDues(u.id).length?'<span class="dot"></span>':''}</button></div>
+    <div class="brandbar"><div class="bl"><img src="tenly-logo.svg" alt="Tenly"></div><button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()?`<span class="cnt">${unread()}</span>`:abonDues(u.id).length?'<span class="dot"></span>':''}</button></div>
     ${lgHead(`${greet}, ${esc(first)}`,longDay(new Date()))}
     ${pay}
     <div class="mt12">${hero}</div>
+    ${groups.length?`<div class="sec-t"><h3>Мои постоянные группы</h3></div><div class="list">${groups.map(t=>`<button class="li" data-a="openTpl" data-id="${t.id}"><div class="lic">${ic('repeat',18)}</div><div class="lt"><b>${esc(t.title)}</b><span>${WDA[t.weekday]} в ${t.time} · ${esc(coach(t.coach).short)}</span></div><div class="lr">€${fmtE(mpOf(t))}/мес${ic('chevR')}</div></button>`).join('')}</div>`:''}
     ${(()=>{const more=myUpcoming().filter(x=>!userState(x).absent&&(!nx||x.id!==nx.id)).slice(0,3);return more.length?`<div class="sec-t"><h3>Мои записи</h3><button data-a="myUp">Все</button></div><div class="list">${more.map(x=>{const st=userState(x);return `<button class="li" data-a="openTr" data-id="${x.id}"><div class="lic">${ic(st.member?'repeat':'cal',18)}</div><div class="lt"><b>${relDay(x.start)}, ${hm(x.start)}</b><span>${esc(x.t.title)} · ${st.member?'постоянная группа':'разово'}</span></div><div class="lr">${ic('chevR')}</div></button>`}).join('')}</div>`:''})()}
     <div class="kpis mt12">
       <button class="kpi" data-a="tab" data-n="profile" style="text-align:left">${assignedGroup(u)?`<small>Ваша группа${qbtn()}</small><b style="font-size:19px">${CATS[catOf(eff(u))].short}</b><span class="muted">определил тренер</span>`:`<small>Ваш уровень${qbtn()}</small><b>NTRP ${fmtR(u.self)}</b><span class="muted">${lvInfo(u.self).name}</span>`}<span class="kpi-ic">${ic('ball')}</span></button>
       <button class="kpi" data-a="myCredits" style="text-align:left"><small>Баланс отыгрышей</small><b>${fmtH(balanceH())}</b><span class="kpi-ic">${ic('repeat')}</span><span class="muted">${credits().length?`действует до ${dShort(pYmd(credits()[0].exp))}`:'за отмену заранее'}</span></button>
     </div>
-    ${groups.length?`<div class="sec-t"><h3>Мои группы</h3></div><div class="list">${groups.map(t=>`<button class="li" data-a="openTpl" data-id="${t.id}"><div class="lic">${ic('repeat',18)}</div><div class="lt"><b>${esc(t.title)}</b><span>${WDA[t.weekday]} в ${t.time} · ${esc(coach(t.coach).short)}</span></div><div class="lr">€${fmtE(t.month)}/мес${ic('chevR')}</div></button>`).join('')}</div>`:''}
     <div class="sec-t"><h3>Подходят вам</h3><button data-a="tab" data-n="schedule">Все</button></div>
     <div class="hs">${recs.map(x=>`<button class="mini" data-a="openTr" data-id="${x.id}"><span class="d">${relDay(x.start)} · ${hm(x.start)}</span><span class="t">${esc(x.t.title)}</span><span class="row fs13 muted">${coachAv(coach(x.t.coach))}${esc(coach(x.t.coach).short)} · ${x.t.dur} мин</span><span class="row" style="gap:5px;margin-top:4px"><span class="tag lv">NTRP ${lvRange(x.t)}</span><span class="tag ok">Есть места</span></span></button>`).join('')}</div>
   </div>`;
@@ -1204,10 +1230,10 @@ SCREENS.training=(p)=>{
   else if(st.member)cta=st.absent?`<button class="btn pri" data-a="toggleAbsent" data-id="${x.id}">Я всё-таки приду</button>`:`<div class="row"><button class="btn ghost" data-a="toggleAbsent" data-id="${x.id}">Не приду</button><button class="btn sec" data-a="addCal">${ic('cal',18)}В календарь</button></div>`;
   else if(st.locked)cta=`<button class="btn sec" data-a="reqAccess" data-id="${t.id}">${ic('lock',18)}Запросить допуск у тренера</button>`;
   else if(x.left===0&&!st.offerS&&!st.offerP){const w=wlOf('single',x.id);
-    cta=(t.month&&x.permFree&&startInst(t)?`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="perm">Постоянное место с ${dShort(startInst(t).start)} · €${fmtE(t.month)}/мес</button><div style="height:8px"></div>`:'')
+    cta=(t.month&&x.permFree&&startInst(t)?`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="perm">Постоянное место с ${dShort(startInst(t).start)} · €${fmtE(mpOf(t))}/мес</button><div style="height:8px"></div>`:'')
       +(w?`<button class="btn ghost" data-a="wlLeave" data-id="${w.id}">${ic('hourglass',18)}Вы в листе ожидания · №${wlPos(w)} — выйти</button>`:`<button class="btn ${t.month&&x.permFree?'ghost':'pri'}" data-a="wlJoin" data-type="single" data-id="${x.id}">${ic('hourglass',18)}Лист ожидания на ${dShort(x.start)}</button>`);}
-  else if(st.offerP&&!(x.left>0||st.offerS))cta=`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="perm">Постоянное место с ${dShort(startInst(t).start)} · €${fmtE(t.month)}/мес</button>`;
-  else cta=t.month&&(x.permFree||st.offerP)&&startInst(t)?`<div class="row"><button class="btn pri" data-a="book" data-id="${x.id}" data-opt="single">Разово · ${eur(t.price)}</button><button class="btn sec" data-a="book" data-id="${x.id}" data-opt="perm">Постоянно${startInst(t).id!==x.id?` с ${dShort(startInst(t).start)}`:''} · €${fmtE(t.month)}/мес</button></div>`:`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="single">Записаться · ${eur(t.price)}</button>`;
+  else if(st.offerP&&!(x.left>0||st.offerS))cta=`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="perm">Постоянное место с ${dShort(startInst(t).start)} · €${fmtE(mpOf(t))}/мес</button>`;
+  else cta=t.month&&(x.permFree||st.offerP)&&startInst(t)?`<div class="row"><button class="btn pri" data-a="book" data-id="${x.id}" data-opt="single">Разово · ${eur(t.price)}</button><button class="btn sec" data-a="book" data-id="${x.id}" data-opt="perm">Постоянно${startInst(t).id!==x.id?` с ${dShort(startInst(t).start)}`:''} · €${fmtE(mpOf(t))}/мес</button></div>`:`<button class="btn pri" data-a="book" data-id="${x.id}" data-opt="single">Записаться · ${eur(t.price)}</button>`;
   if((st.offerS||st.offerP)&&!st.booking&&!st.member)cta=`<div class="fs13 b" style="margin:0 2px 8px;color:var(--brown)">${ic('hourglass',14)} Место держится за вами до ${hm(new Date((st.offerS||st.offerP).offerUntil))} — потом перейдёт следующему</div>`+cta+`<button class="btn ghost mt8" data-a="wlDecline" data-id="${(st.offerS||st.offerP).id}">Отказаться — пусть запишется следующий</button>`;
   const yes=(ok,y,n)=>ok?`<span class="tag ok">${ic('check')}${y}</span>`:`<span class="tag bad">${n}</span>`;
   return `${navbar('Тренировка')}<div class="content no-tab" data-scroll="tr${p.id}" style="padding-bottom:120px">
@@ -1215,14 +1241,14 @@ SCREENS.training=(p)=>{
       <h2>${esc(t.title)}</h2><div class="muted">${longDay(x.start)}, ${hm(x.start)}–${hm(x.end)}</div>
       ${st.frozen?`<div class="note mt12">${ic('snow')}<div>Ваше место заморожено на эту дату — оно открыто для разовой записи других игроков.</div></div>`:''}
       <div class="facts"><div class="fact"><small>Длительность</small><b>${t.dur} минут</b></div><div class="fact"><small>Где</small><b>${VENUE.name} · ${esc(t.court)}</b></div>
-        ${!st.locked&&!st.mine&&!st.member&&x.left>0?`<button class="fact" style="text-align:left;box-shadow:inset 0 0 0 2px var(--pri)" data-a="book" data-id="${x.id}" data-opt="single"><small>Разово · выбрать</small><b style="color:var(--pri)">${eur(t.price)}</b></button>`:`<div class="fact"><small>Разово</small><b>${eur(t.price)}</b></div>`}${t.month&&x.permFree&&!st.member&&!st.locked&&startInst(t)?`<button class="fact" style="text-align:left;box-shadow:inset 0 0 0 2px var(--pri)" data-a="book" data-id="${x.id}" data-opt="perm"><small>Постоянное место · выбрать</small><b style="color:var(--pri)">€${fmtE(t.month)}/мес</b></button>`:`<div class="fact"><small>Постоянное место</small><b>${t.month?`€${fmtE(t.month)}/мес`:'—'}</b></div>`}</div>
+        ${!st.locked&&!st.mine&&!st.member&&x.left>0?`<button class="fact" style="text-align:left;box-shadow:inset 0 0 0 2px var(--pri)" data-a="book" data-id="${x.id}" data-opt="single"><small>Разово · выбрать</small><b style="color:var(--pri)">${eur(t.price)}</b></button>`:`<div class="fact"><small>Разово</small><b>${eur(t.price)}</b></div>`}${t.month&&x.permFree&&!st.member&&!st.locked&&startInst(t)?`<button class="fact" style="text-align:left;box-shadow:inset 0 0 0 2px var(--pri)" data-a="book" data-id="${x.id}" data-opt="perm"><small>Постоянное место · выбрать</small><b style="color:var(--pri)">€${fmtE(mpOf(t))}/мес</b></button>`:`<div class="fact"><small>Постоянное место</small><b>${t.month?`€${fmtE(mpOf(t))}/мес`:'—'}</b></div>`}</div>
       ${st.locked?`<div class="note warn mt12">${ic('lock')}<div>Эта тренировка для группы «${CATS[t.level].name}», а ваша группа — «${CATS[catOf(eff(me()))].name}»${assignedGroup(me())?' (её определил тренер)':''}. Можно запросить допуск — тренер рассмотрит.</div></div>`:''}
     </div>
     <div class="sec-t"><h3>Места</h3></div>
     <div class="list"><div class="li"><div class="lic">${ic('users',18)}</div><div class="lt"><b>Разовая запись</b><span>На ${dShort(x.start)}</span></div>${yes(x.left>0||st.offerS,st.offerS?'Держится за вами':'Есть места','Мест нет')}</div>
       ${t.month?`<div class="li"><div class="lic">${ic('repeat',18)}</div><div class="lt"><b>Постоянное место</b><span>${WDA[t.weekday]} в ${t.time}${x.permFree&&!st.member?(()=>{const s0=startInst(t);if(!s0)return ' · сейчас нет даты, с которой есть места на всех занятиях';if(s0.id===x.id)return ' · начиная с этого занятия';const fb=fullBefore(t,s0,x.start);return ` · <b style="color:var(--text)">начиная с ${dShort(s0.start)}</b>${fb.length?` (на ${fb.map(z=>dShort(z.start)).join(', ')} мест нет)`:''}`})():''}</span></div>${yes(x.permFree>0||st.offerP,st.offerP?'Держится за вами':'Есть','Нет')}</div>`:''}
       ${t.month&&!x.permFree&&!st.member?(()=>{const w=wlOf('perm',t.id);return `<div class="li"><div class="lic">${ic('hourglass',18)}</div><div class="lt"><b>Лист ожидания на постоянное место</b><span>${w?`Вы №${wlPos(w)} в очереди — сообщим, когда место освободится`:'Сообщим, как только в группе освободится постоянное место'}</span></div>${w?`<button class="btn ghost sm" data-a="wlLeave" data-id="${w.id}">Выйти</button>`:`<button class="btn sec sm" data-a="wlJoin" data-type="perm" data-id="${t.id}">Встать</button>`}</div>`})():''}</div>
-    ${(()=>{const inv=invOfBooking(st.booking);return inv&&isReceipt(inv)?`<div class="sec-t"><h3>Оплата</h3></div><div class="list"><div class="li"><div class="lic">${ic('cash',18)}</div><div class="lt"><b>${inv.paid?'Оплачено на месте':'Оплата на месте · €'+fmtE(inv.amount)}</b><span>${inv.paid?'Кассовый чек выдан в клубе':'Тренеру или администратору — выдадут кассовый чек'}</span></div></div></div>`:inv?`<div class="sec-t"><h3>Оплата</h3></div><div class="list"><button class="li" data-a="openInv" data-id="${inv.id}"><div class="lic">${ic('doc',18)}</div><div class="lt"><b>Счёт № ${inv.no}</b><span>${inv.paid?'Оплачено':'Ожидает оплаты на месте'} · €${fmtE(inv.amount)}${inv.creditH?` + ${fmtH(inv.creditH)} отыгрыша`:''}</span></div><div class="lr">${ic('chevR')}</div></button></div>`:''})()}
+    ${(()=>{const inv=invOfBooking(st.booking);return inv&&isReceipt(inv)?`<div class="sec-t"><h3>Оплата</h3></div><div class="list"><div class="li"><div class="lic">${ic('cash',18)}</div><div class="lt"><b>${inv.paid?(isTransfer(inv)?'Оплачено переводом':'Оплачено на месте'):'Оплата на месте · €'+fmtE(inv.amount)}</b><span>${inv.paid?offNote(inv):'Тренеру или администратору — выдадут кассовый чек'}</span></div></div></div>`:inv?`<div class="sec-t"><h3>Оплата</h3></div><div class="list"><button class="li" data-a="openInv" data-id="${inv.id}"><div class="lic">${ic('doc',18)}</div><div class="lt"><b>Счёт № ${inv.no}</b><span>${inv.paid?'Оплачено':'Ожидает оплаты на месте'} · €${fmtE(inv.amount)}${inv.creditH?` + ${fmtH(inv.creditH)} отыгрыша`:''}</span></div><div class="lr">${ic('chevR')}</div></button></div>`:''})()}
     <div class="sec-t"><h3>Где</h3></div>
     <div class="list"><a class="li" href="${VENUE.map}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><div class="lic">${ic('pin',18)}</div><div class="lt"><b>${VENUE.full}</b><span>${VENUE.addr} · ${esc(t.court)}</span></div><div class="lr" style="color:var(--pri);font-weight:600">Маршрут${ic('chevR')}</div></a></div>
     <div class="sec-t"><h3>Тренер</h3></div>
@@ -1247,7 +1273,7 @@ SCREENS.tplView=(p)=>{
   const isMember=t.members.includes(uid());
   return `${navbar('Группа')}<div class="content no-tab">
     <div class="detail-hero"><span class="tag lv">NTRP ${lvRange(t)}</span><h2>${esc(t.title)}</h2><div class="muted">${WDA[t.weekday][0].toUpperCase()+WDA[t.weekday].slice(1)} · ${t.time} · ${t.dur} мин · ${esc(coach(t.coach).name)}</div>
-    ${isMember?`<div class="note mt12">${ic('repeat')}<div>У вас постоянное место. Абонемент €${fmtE(t.month)}/мес списывается с карты •••• 4242 ежемесячно, напомним за 3 дня.</div></div>`:''}</div>
+    ${isMember?`<div class="note mt12">${ic('repeat')}<div>У вас постоянное место. Абонемент €${fmtE(mpOf(t))}/мес списывается с карты •••• 4242 ежемесячно, напомним за 3 дня.</div></div>`:''}</div>
     <div class="sec-t"><h3>Ближайшие занятия</h3></div>${next.map(x=>trCard(x,{showDate:true})).join('')}
     ${isMember?`<button class="btn ghost mt16" data-a="mySubs">${ic('repeat',18)}Управлять абонементом</button>`:''}
   </div>`;
@@ -1272,7 +1298,7 @@ SCREENS.my=()=>{
       ${m.pay==='cash'&&!m.paid?`<div class="note warn mt12">${ic('cash')}<div>Оплата €${fmtE(m.firstAmount??t.month)} наличными — тренеру или администратору на первом занятии. На месте выдадут кассовый чек.</div></div>`:''}
       ${fz?`<div class="note mt12">${ic('snow')}<div><b>Заморожено ${dShort(pYmd(fz.from))} – ${dShort(pYmd(fz.to))}</b><br>Место сохранено за вами. Оплата за период не списывается. Пока вас нет, на ваше место могут записаться разово.</div></div>`:''}
       <div class="facts"><div class="fact"><small>Оплачено</small><b style="color:${pm.length?'var(--ok)':'var(--text)'}">${pm.length?pm.join(', '):'—'}</b></div><div class="fact"><small>${nextDue?`За ${monthName(nextDue)} — до ${dShort(nextDue)}`:'Следующая оплата'}</small><b>${nextDue?`€${fmtE(nb.amount)}${nb.frozen?` <span class="fs13 muted" style="font-weight:500">(${nb.frozen} в заморозке)</span>`:''}`:'—'}</b></div></div>
-      <div class="fs13 muted mt8">€${fmtE(t.month)} / мес · оплата по календарным месяцам: до 1-го числа — за все занятия месяца.</div>
+      <div class="fs13 muted mt8">€${fmtE(mpOf(t))} / мес · оплата по календарным месяцам: до 1-го числа — за все занятия месяца.</div>
       ${myDues.length?myDues.map(d=>`<button class="btn pri mt12" data-a="payAbon" data-tpl="${t.id}" data-y="${d.y}" data-m="${d.m}">${ic('card')}Оплатить ${MN[d.m].toLowerCase()} · €${fmtE(d.amount)}</button>`).join(''):`<div class="fs13 muted mt12">${ic('card',14)} Карта •••• 4242 · напоминание за 3 дня до оплаты</div>`}
       ${m.until?'':`<button class="btn ghost sm mt8" style="color:var(--bad)" data-a="leaveGroup" data-id="${t.id}">Отказаться от постоянного места</button>`}
       ${fz?'':reqSent?`<div class="tag warn mt12">${ic('snow')}Запрос на заморозку ${(r=>r?fzRange(r.from,r.to):'')(D.requests.find(r=>r.type==='freeze'&&r.pid===m.uid&&r.tpl===t.id))} отправлен администратору</div>`:`<button class="btn ghost sm mt12" data-a="freezeReq" data-tpl="${t.id}">${ic('snow',16)}Попросить заморозку (отпуск, травма)</button>`}</div>`}).join('')
@@ -1304,7 +1330,7 @@ SCREENS.invoice=(p)=>{
   const u=player(inv.uid)||me();const d=pYmd(inv.date);
   if(isReceipt(inv))return `${navbar('Оплата')}<div class="content no-tab"><div class="card"><div class="between"><b>${esc(inv.title)}</b><span class="tag ${inv.paid?'ok':'warn'}">${inv.paid?'Оплачено':'Ожидает оплаты'}</span></div>
     <div class="facts"><div class="fact"><small>Сумма</small><b>€${fmtE(inv.amount)}</b></div><div class="fact"><small>Способ</small><b>${esc(inv.method)}</b></div></div>
-    <div class="note mt12">${ic('cash')}<div>Оплата на месте подтверждается кассовым чеком из кассового аппарата клуба — счёт не формируется.${inv.by?` Принял(а): ${esc(inv.by)}.`:''}</div></div></div></div>`;
+    <div class="note mt12">${ic('cash')}<div>${isTransfer(inv)?'Оплата банковским переводом по счёту, который школа выставила вне приложения, — повторный счёт не формируется.':'Оплата на месте подтверждается кассовым чеком из кассового аппарата клуба — счёт не формируется.'}${inv.by?` Принял(а): ${esc(inv.by)}.`:''}</div></div></div></div>`;
   const st=inv.cancelled?['','Аннулирован']:inv.paid?['ok','Оплачено']:['warn','Ожидает оплаты'];
   const ses=(inv.sessions||[]).slice().sort();
   const per=inv.period||(ses.length?(inv.kind==='abon'?(d0=>({from:ymd(new Date(d0.getFullYear(),d0.getMonth(),1)),to:ymd(new Date(d0.getFullYear(),d0.getMonth()+1,0))}))(pYmd(ses[0])):{from:ses[0],to:ses.at(-1)}):{from:inv.date,to:inv.date});
@@ -1343,17 +1369,22 @@ SCREENS.invoice=(p)=>{
     <div class="row mt12"><button class="btn sec" data-a="toast" data-t="PDF счёта сохранён в «Файлы»">${ic('doc',18)}PDF</button><button class="btn ghost" data-a="toast" data-t="Счёт отправлен на e-mail">${ic('share',18)}На e-mail</button></div>
   </div>`;
 };
+function reqCard(r){const p=player(r.pid);const title={level:'Изменить уровень',access:'Допуск в группу',freeze:'Заморозка места'}[r.type];
+      const sub=r.type==='level'?`${esc(coach(r.from).name)} предлагает ${fmtR(eff(p))} → <b style="color:var(--text)">${fmtR(r.to)}</b>`:r.type==='freeze'?`${esc(tpl(r.tpl).title)} · ${WD[tpl(r.tpl).weekday]} ${tpl(r.tpl).time} · <b style="color:var(--text)">${fzRange(r.from,r.to)}</b>`:`${esc(tpl(r.tpl).title)} (NTRP ${lvRange(tpl(r.tpl))}), уровень игрока ${fmtR(eff(p))}`;
+      return `<div class="card" style="margin-bottom:8px"><div class="row">${av(p.name,colorOf(p.id),'')}<div style="flex:1"><b>${title}: ${esc(p.name)}</b><div class="fs13 muted">${sub}</div></div>${r.type==='freeze'?`<span class="tag pri">${ic('snow')}</span>`:''}</div>
+      <div class="fs14 mt8" style="line-height:1.4">«${esc(r.note)}»</div>
+      <div class="row mt12"><button class="btn ghost sm" style="flex:1" data-a="reqNo" data-id="${r.id}">Отклонить</button><button class="btn pri sm" style="flex:1" data-a="reqYes" data-id="${r.id}">Принять</button></div></div>`}
 SCREENS.inbox=()=>{
   const u=inboxId();const ms=myMsgs(u);
   const body=ms.length?ms.map(m=>{const isNew=!m.read[u];const ev=m.kind==='event';const sp=m.kind==='spot';const x=sp&&instById(m.inst);const my=m.rsvp[u];
-    return `<div class="msg ${isNew?'unread':''}"><div class="mh"><div class="mi" style="${ev?'background:var(--ball);color:#3d4a07':sp?'background:var(--ok-soft);color:var(--ok)':''}">${ic(ev?'star':sp?'ball':m.kind==='closed'?'cal':'bell',18)}</div><div style="flex:1"><div class="between"><b>${esc(m.title)}</b><span class="fs13 muted">${dShort(pYmd(m.at))}</span></div><div class="fs14 mt8" style="line-height:1.45">${esc(m.text)}</div>
+    return `<div class="msg ${isNew?'unread':''} ${m.link?'lnk':''}" data-a="openMsg" data-id="${m.id}"><div class="mh"><div class="mi" style="${ev?'background:var(--ball);color:#3d4a07':sp?'background:var(--ok-soft);color:var(--ok)':''}">${ic(ev?'star':sp?'ball':m.kind==='closed'?'cal':'bell',18)}</div><div style="flex:1"><div class="between"><b>${isNew?'<span class="udot"></span>':''}${esc(m.title)}</b><span class="fs13 muted">${dShort(pYmd(m.at))}</span></div><div class="fs14 mt8" style="line-height:1.45">${esc(m.text)}</div>${m.link?`<div class="fs13 b mt8" style="color:var(--pri)">${m.link.req?(D.requests.some(r=>r.id===m.link.req)?'Открыть запрос':'Запрос уже обработан'):'Открыть'} ›</div>`:''}
       ${ev?`<div class="fs13 muted mt8">${ic('cal',14)} ${fromDay(pYmd(m.event.date))}, ${m.event.time} · ${esc(m.event.place)}</div>`:''}
       ${sp&&x?`<div class="fs13 muted mt8">${ic('clock',14)} ${relDay(x.start)}, ${hm(x.start)} · ${esc(x.t.title)} · ${m.wl&&offerActive(D.waitlist.find(z=>z.id===m.wl))?'место держится за вами':userState(x).mine?'вы записаны':x.left>0?'есть места':'места уже заняли'}</div>`:''}</div></div>
       ${ev?`<div class="row mt12"><button class="btn sm ${my==='yes'?'pri':'sec'}" style="flex:1" data-a="rsvp" data-id="${m.id}" data-v="yes">${my==='yes'?ic('check',16):''}Буду</button><button class="btn sm ${my==='no'?'dark':'ghost'}" style="flex:1" data-a="rsvp" data-id="${m.id}" data-v="no">Не смогу</button></div>`:''}
       ${sp&&x&&m.wl?(()=>{const w=D.waitlist.find(z=>z.id===m.wl);return w&&offerActive(w)?`<div class="fs13 b mt8" style="color:var(--brown)">${ic('hourglass',14)} Место за вами до ${hm(new Date(w.offerUntil))}</div><div class="row mt8"><button class="btn pri sm" style="flex:1" data-a="openTr" data-id="${x.id}">Записаться</button><button class="btn ghost sm" style="flex:1" data-a="wlDecline" data-id="${w.id}">Отказаться</button></div>`:`<div class="fs13 muted mt8">${userState(x).mine||(w&&0)?'Вы записаны':'Предложение больше не действует'}</div>`})():sp&&x&&x.left>0&&!userState(x).mine?`<button class="btn pri sm mt12" style="width:100%" data-a="openTr" data-id="${x.id}">Записаться</button>`:''}
     </div>`}).join(''):`<div class="empty"><div class="ei">${ic('bell',26)}</div>Уведомлений пока нет</div>`;
-  ms.forEach(m=>m.read[u]=true);
-  return `${navbar('Уведомления')}<div class="content no-tab" data-scroll="inbox">${body}</div>`;
+  const n=ms.filter(m=>!m.read[u]).length;
+  return `${navbar('Уведомления')}<div class="content no-tab" data-scroll="inbox">${ms.length?`<div class="between" style="margin:0 4px 10px"><span class="fs14 muted">${n?`Непрочитанных: <b style="color:var(--text)">${n}</b>`:'Все прочитаны'}</span>${n?'<button class="lnkbtn" data-a="readAll">Прочитать все</button>':''}</div>`:''}${body}</div>`;
 };
 SCREENS.profile=()=>{
   const u=me();const L=lvInfo(u.self);
@@ -1386,7 +1417,7 @@ SCREENS.cSessions=()=>{
   const c=coach(S.coachId);const list=coachInst(14);
   const today=list.filter(x=>dayDiff(x.start)===0);
   const m=new Map();list.forEach(x=>{const k=ymd(x.start);if(!m.has(k))m.set(k,[]);m.get(k).push(x)});
-  return `<div class="content" data-scroll="cs">${lgHead('Мои занятия',`${esc(c.name)} · тренер`,`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()?'<span class="dot"></span>':''}</button>`)}
+  return `<div class="content" data-scroll="cs">${lgHead('Мои занятия',`${esc(c.name)} · тренер`,`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()?`<span class="cnt">${unread()}</span>`:''}</button>`)}
     <div class="note">${ic('clip')}<div>Откройте занятие, чтобы отметить <b>посещение</b>, <b>принять оплату</b> на месте или <b>добавить игрока</b>. Тренер видит только свои занятия.</div></div>
     <div class="kpis mt12"><div class="kpi"><small>Занятий на неделе</small><b>${coachInst(7).length}</b></div><div class="kpi"><small>Заполненность</small><b>${Math.round(list.reduce((a,x)=>a+x.taken/x.t.cap,0)/Math.max(1,list.length)*100)}%</b><div class="bar"><i style="width:${Math.round(list.reduce((a,x)=>a+x.taken/x.t.cap,0)/Math.max(1,list.length)*100)}%"></i></div></div></div>
     ${[...m.entries()].map(([k,it])=>`<div class="grp-h"><span>${relDay(pYmd(k))}${dayDiff(pYmd(k))<3?' · '+dShort(pYmd(k)):''}</span><span>${it.length}</span></div>${it.map(x=>{const cash=x.singles.filter(b=>b.pay==='cash'&&!D.cashGot[b.id]).length;return `<button class="tr" data-a="go" data-n="cSession" data-id="${x.id}"><div class="tr-time"><b>${hm(x.start)}</b><span>${x.t.dur} мин</span></div><div class="tr-main"><div class="tr-title">${esc(x.t.title)}</div><div class="tr-meta">${esc(x.t.court)} · NTRP ${lvRange(x.t)}</div><div class="tr-tags"><span class="tag ${x.left===0?'ok':''}">${ic('users')}${x.taken}/${x.t.cap}</span>${cash?`<span class="tag warn">${ic('cash')}Принять оплату: ${cash}</span>`:''}${dayDiff(x.start)===0?`<span class="tag pri">${ic('clip')}Отметить посещение</span>`:''}</div></div><div class="tr-price" style="justify-content:center;color:var(--muted2)">${ic('chevR')}</div></button>`}).join('')}`).join('')}
@@ -1454,7 +1485,7 @@ SCREENS.aHome=()=>{
   const wk=instancesRange(7);const today=instancesRange(1);
   const fill=Math.round(wk.reduce((a,x)=>a+x.taken/x.t.cap,0)/Math.max(1,wk.length)*100);
   const permFree=D.tpls.filter(t=>!t.deleted).reduce((a,t)=>a+Math.max(0,t.perm-t.members.length),0);
-  return `<div class="content" data-scroll="ah">${lgHead('Обзор',`${longDay(new Date())} · Администратор`,`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()?'<span class="dot"></span>':''}</button>`)}
+  return `<div class="content" data-scroll="ah">${lgHead('Обзор',`${longDay(new Date())} · Администратор`,`<button class="icon-btn" data-a="go" data-n="inbox">${ic('bell')}${unread()?`<span class="cnt">${unread()}</span>`:''}</button>`)}
     <div class="row" style="margin-bottom:12px"><button class="btn pri sm" style="flex:1" data-a="go" data-n="aMsg">${ic('bell',16)}Уведомление</button><button class="btn sec sm" style="flex:1" data-a="go" data-n="aClosed">${ic('cal',16)}Нерабочие дни</button></div>
     <div class="kpis">
       <div class="kpi"><small>Заполненность недели</small><b>${fill}%</b><div class="bar"><i style="width:${fill}%"></i></div></div>
@@ -1465,11 +1496,7 @@ SCREENS.aHome=()=>{
     <div class="sec-t"><h3>Последние действия</h3><button data-a="go" data-n="aAudit">Журнал</button></div>
     <div class="list">${D.audit.slice(0,4).map(a=>`<button class="li" data-a="go" data-n="aAudit"><div class="lt"><b>${esc(a.action)}</b><span>${esc(a.who)}${a.text?' · '+esc(a.text):''}</span></div><span class="fs13 muted" style="white-space:nowrap">${fmtAt(a.at)}</span></button>`).join('')}</div>
     <div class="sec-t"><h3>Запросы</h3><span class="muted fs14">${D.requests.length}</span></div>
-    ${D.requests.length?D.requests.map(r=>{const p=player(r.pid);const title={level:'Изменить уровень',access:'Допуск в группу',freeze:'Заморозка места'}[r.type];
-      const sub=r.type==='level'?`${esc(coach(r.from).name)} предлагает ${fmtR(eff(p))} → <b style="color:var(--text)">${fmtR(r.to)}</b>`:r.type==='freeze'?`${esc(tpl(r.tpl).title)} · ${WD[tpl(r.tpl).weekday]} ${tpl(r.tpl).time} · <b style="color:var(--text)">${fzRange(r.from,r.to)}</b>`:`${esc(tpl(r.tpl).title)} (NTRP ${lvRange(tpl(r.tpl))}), уровень игрока ${fmtR(eff(p))}`;
-      return `<div class="card" style="margin-bottom:8px"><div class="row">${av(p.name,colorOf(p.id),'')}<div style="flex:1"><b>${title}: ${esc(p.name)}</b><div class="fs13 muted">${sub}</div></div>${r.type==='freeze'?`<span class="tag pri">${ic('snow')}</span>`:''}</div>
-      <div class="fs14 mt8" style="line-height:1.4">«${esc(r.note)}»</div>
-      <div class="row mt12"><button class="btn ghost sm" style="flex:1" data-a="reqNo" data-id="${r.id}">Отклонить</button><button class="btn pri sm" style="flex:1" data-a="reqYes" data-id="${r.id}">Принять</button></div></div>`}).join(''):`<div class="card muted fs14">Новых запросов нет</div>`}
+    ${D.requests.length?D.requests.map(reqCard).join(''):`<div class="card muted fs14">Новых запросов нет</div>`}
     <div class="sec-t"><h3>Сегодня</h3></div>
     ${today.length?today.map(x=>`<button class="tr" data-a="go" data-n="cSession" data-id="${x.id}"><div class="tr-time"><b>${hm(x.start)}</b><span>${x.t.dur} мин</span></div><div class="tr-main"><div class="tr-title">${esc(x.t.title)}</div><div class="tr-meta">${coachAv(coach(x.t.coach))}${esc(coach(x.t.coach).short)} · ${esc(x.t.court)}</div><div class="tr-tags"><span class="tag">${ic('users')}${x.taken}/${x.t.cap}</span></div></div></button>`).join(''):'<div class="card muted fs14">На сегодня занятий больше нет</div>'}
   </div>`;
@@ -1486,7 +1513,7 @@ SCREENS.aTrain=()=>{
   }else{
     const ts=D.tpls.filter(t=>!t.deleted&&(f==='all'||t.coach===f)).sort((a,b)=>(a.repeat?a.weekday:wdi(pYmd(a.date)))-(b.repeat?b.weekday:wdi(pYmd(b.date)))||a.time.localeCompare(b.time));
     const byDay=new Map();ts.forEach(t=>{const k=t.repeat?WDL[t.weekday]:'Разовые';if(!byDay.has(k))byDay.set(k,[]);byDay.get(k).push(t)});
-    body=[...byDay.entries()].map(([k,it])=>`<div class="grp-h"><span>${k}</span><span>${it.length}</span></div>${it.map(t=>`<button class="tr" data-a="go" data-n="aTplEdit" data-id="${t.id}"><div class="tr-time"><b>${t.time}</b><span>${t.dur} мин</span></div><div class="tr-main"><div class="tr-title">${esc(t.title)}</div><div class="tr-meta">${coachAv(coach(t.coach))}${esc(coach(t.coach).short)} · ${esc(t.court)}</div><div class="tr-tags"><span class="tag lv">NTRP ${lvRange(t)}</span><span class="tag pri">Пост. ${t.members.length}/${t.perm}</span><span class="tag">${eur(t.price)} · €${fmtE(t.month)}/мес</span></div></div><div class="tr-price" style="justify-content:center;color:var(--muted2)">${ic('edit')}</div></button>`).join('')}`).join('');
+    body=[...byDay.entries()].map(([k,it])=>`<div class="grp-h"><span>${k}</span><span>${it.length}</span></div>${it.map(t=>`<button class="tr" data-a="go" data-n="aTplEdit" data-id="${t.id}"><div class="tr-time"><b>${t.time}</b><span>${t.dur} мин</span></div><div class="tr-main"><div class="tr-title">${esc(t.title)}</div><div class="tr-meta">${coachAv(coach(t.coach))}${esc(coach(t.coach).short)} · ${esc(t.court)}</div><div class="tr-tags"><span class="tag lv">NTRP ${lvRange(t)}</span><span class="tag pri">Пост. ${t.members.length}/${t.perm}</span><span class="tag">${eur(t.price)} · €${fmtE(mpOf(t))}/мес</span></div></div><div class="tr-price" style="justify-content:center;color:var(--muted2)">${ic('edit')}</div></button>`).join('')}`).join('');
   }
   return `<div class="content" data-scroll="at${seg}">${lgHead('Тренировки','',`<button class="btn sec sm" data-a="go" data-n="aPrices">${ic('cash',16)}Цены</button>`)}${segH}${chips}${body}</div><button class="fab" data-a="go" data-n="aTplEdit" data-id="new">${ic('plus')}</button>`;
 };
@@ -1503,7 +1530,7 @@ SCREENS.aTplEdit=(p)=>{
     <div class="f2 f-group"><div class="field"><label>День недели</label><select id="eWd">${WDL.map((w,i)=>`<option value="${i}" ${t.weekday===i?'selected':''}>${w}</option>`).join('')}</select></div>
       <div class="field"><label>Время начала</label><input id="eTime" type="time" value="${t.time}"></div></div>
     <div class="f2 f-group"><div class="field"><label>Длительность</label><select id="eDur" onchange="document.getElementById('ePrice').value=priceFor(+this.value);document.getElementById('eMonth').value=monthFor(+this.value)">${[60,90,120].map(d=>`<option ${t.dur===d?'selected':''} value="${d}">${d} минут</option>`).join('')}</select></div>
-      <div class="field"><label>Корт</label><select id="eCourt">${['Корт 1','Корт 2','Корт 3'].map(c=>`<option ${t.court===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Корт</label><select id="eCourt">${Array.from({length:9},(_,i)=>'Корт '+(i+1)).map(c=>`<option ${t.court===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
     <div class="grp-h">Места и цены</div>
     <div class="f2 f-group"><div class="field"><label>Мест в группе</label><input id="eCap" type="number" value="${GROUP_CAP}" disabled></div><div class="field"><label>Из них постоянных</label><input id="ePerm" type="number" inputmode="numeric" value="${t.perm}"></div></div>
     <div class="f2 f-group"><div class="field"><label>Разово, €</label><input id="ePrice" type="text" inputmode="numeric" value="${t.price}" ${INT_INPUT}></div><div class="field"><label>Абонемент в месяц, €</label><input id="eMonth" type="text" inputmode="numeric" value="${t.month||''}" placeholder="—" ${INT_INPUT}></div></div>
@@ -1544,7 +1571,7 @@ SCREENS.aPlayer=(p)=>{
       ${draft.on&&catOf(draft.v)!==catOf(pl.self)?`<div class="note warn mt12">${ic('eye')}<div>Игрок не увидит число, но увидит, что тренер определил его группу: <b>${CATS[catOf(draft.v)].name}</b> — без этого ему было бы непонятно, почему пропали тренировки.</div></div>`:''}
       <div class="note mt12">${ic('info')}<div>С этим уровнем игроку доступно <b>${avail}</b> ${plural(avail,'тренировка','тренировки','тренировок')} на 2 недели.</div></div></div>
     <div class="sec-t"><h3>Группы</h3></div>
-    <div class="list">${groups.length?groups.map(t=>{const fz=freezeOf(t.id,pl.id);return `<div class="li"><div class="lic">${ic(fz?'snow':'repeat',18)}</div><div class="lt"><b>${esc(t.title)}</b><span>${WD[t.weekday]} ${t.time} · €${fmtE(t.month)}/мес</span><span style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${fz?`<span class="tag pri">Заморожено ${fzRange(fz.from,fz.to)}</span>`:`<span class="tag ${payPending(pl.id)?'warn':'ok'}">${payPending(pl.id)?'Ожидает оплаты':'Оплачено'}</span>`}</span></div>${fz?`<button class="btn ghost sm" data-a="unfreeze" data-tpl="${t.id}" data-pid="${pl.id}">Снять</button>`:`<button class="btn sec sm" data-a="freezeOpen" data-tpl="${t.id}" data-pid="${pl.id}">${ic('snow',16)}Заморозить</button>`}</div>`}).join(''):'<div class="li muted fs14">Нет постоянных групп</div>'}</div>
+    <div class="list">${groups.length?groups.map(t=>{const fz=freezeOf(t.id,pl.id);return `<div class="li"><div class="lic">${ic(fz?'snow':'repeat',18)}</div><div class="lt"><b>${esc(t.title)}</b><span>${WD[t.weekday]} ${t.time} · €${fmtE(mpOf(t,pl.id))}/мес</span><span style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${fz?`<span class="tag pri">Заморожено ${fzRange(fz.from,fz.to)}</span>`:`<span class="tag ${payPending(pl.id)?'warn':'ok'}">${payPending(pl.id)?'Ожидает оплаты':'Оплачено'}</span>`}</span></div>${fz?`<button class="btn ghost sm" data-a="unfreeze" data-tpl="${t.id}" data-pid="${pl.id}">Снять</button>`:`<button class="btn sec sm" data-a="freezeOpen" data-tpl="${t.id}" data-pid="${pl.id}">${ic('snow',16)}Заморозить</button>`}</div>`}).join(''):'<div class="li muted fs14">Нет постоянных групп</div>'}</div>
     <div class="sec-t"><h3>Оплаты</h3><button data-a="recvOpen" data-pid="${pl.id}">+ Принять</button></div>
     <div class="list">${debts(pl.id).length?debts(pl.id).map(debtRow).join(''):`<div class="li"><div class="lic" style="background:var(--ok-soft);color:var(--ok)">${ic('check',18)}</div><div class="lt"><b>Долгов нет</b><span>Все занятия и абонементы оплачены</span></div></div>`}</div>
     <div class="sec-t"><h3>Отыгрыши</h3></div>
@@ -1574,7 +1601,7 @@ SCREENS.aPay=()=>{
     <div class="list mt8">${reg.map(r=>{const pl=player(r.u);return `<div class="li">${av(pl.name,colorOf(pl.id),'')}<div class="lt"><b>${esc(pl.name)}${pl.noApp?' <span class="tag">без приложения</span>':''}</b><span>${esc(r.t.title)} · ${WD[r.t.weekday]} ${r.t.time} · ${esc(coach(r.t.coach).short)}</span></div>${r.frozen?`<span class="tag pri">${ic('snow')}заморожен</span>`:r.paid?`<span class="tag ok">${ic('check')}€${fmtE(r.b.amount)}</span>`:`<button class="btn sec sm" data-a="markPaidOpen" data-id="C:${r.u}|${r.t.id}|${ymKey(my,mm)}">€${fmtE(r.b.amount)} · Оплачено</button>`}</div>`}).join('')}</div>`;
   const body=seg==='abon'?regHtml:seg==='due'
     ?`<div class="list">${ds.length?ds.map(debtRow).join(''):`<div class="li"><div class="lic" style="background:var(--ok-soft);color:var(--ok)">${ic('check',18)}</div><div class="lt"><b>Все оплаты получены</b></div></div>`}</div>
-      <div class="fs13 muted mt8" style="padding:0 4px">Нажмите «Оплачено», чтобы отметить оплату наличными, картой в клубе или переводом — игрок увидит оплату и получит счёт.</div>`
+      <div class="fs13 muted mt8" style="padding:0 4px">Нажмите «Оплачено», чтобы отметить оплату наличными, картой в клубе или переводом — игрок увидит оплату. Счёт в приложении формируется только при оплате через приложение.</div>`
     :`<div class="chips"><button class="chip ${f==='all'?'on':''}" data-a="aPayF" data-v="all">Все</button>${Object.entries(PAY_GROUPS).map(([k,v])=>`<button class="chip ${f===k?'on':''}" data-a="aPayF" data-v="${k}">${v}</button>`).join('')}</div>
       <div class="list">${list.length?list.map(p=>{const pl=player(p.uid);return `<button class="li" data-a="openInv" data-id="${p.id}">${av(pl.name,colorOf(pl.id),'')}<div class="lt"><b>${esc(pl.name)}</b><span>${esc(p.title)}</span><span>${dShort(pYmd(p.date))} · ${esc(p.method)}${p.by?` · принял(а): ${esc(p.by)}`:p.markedBy==='admin'?' · отмечено вручную':''}</span></div><b style="color:var(--text)">€${fmtE(p.amount)}</b></button>`}).join(''):'<div class="li muted fs14">Нет оплат</div>'}</div>`;
   return `<div class="content" data-scroll="apay${seg}">${lgHead('Оплаты','',`<button class="btn pri sm" data-a="recvOpen">${ic('plus',16)}Принять</button>`)}
@@ -1587,7 +1614,7 @@ SCREENS.aPay=()=>{
 SCREENS.aDebts=()=>{
   const ds=debts();const paidToday=D.payments.filter(p=>p.markedBy==='admin');
   return `${navbar('Ожидают оплаты')}<div class="content no-tab" data-scroll="adebts">
-    <div class="note">${ic('cash')}<div>Отметьте, кто заплатил наличными, переводом или картой в клубе. Игрок сразу увидит оплату и получит счёт — напоминание об оплате пропадёт.</div></div>
+    <div class="note">${ic('cash')}<div>Отметьте, кто заплатил наличными, переводом или картой в клубе. Игрок сразу увидит оплату, напоминание пропадёт. Наличные и карта в клубе — кассовый чек, перевод — по счёту, который школа уже выставила.</div></div>
     <div class="grp-h"><span>Не оплачено</span><span>€${fmtE(ds.reduce((a,d)=>a+d.amount,0))}</span></div>
     <div class="list">${ds.length?ds.map(debtRow).join(''):'<div class="li muted fs14">Все оплаты получены</div>'}</div>
     ${paidToday.length?`<div class="grp-h">Отмечено сегодня</div><div class="list">${paidToday.map(p=>{const pl=player(p.uid);return `<button class="li" data-a="openInv" data-id="${p.id}">${av(pl.name,colorOf(pl.id),'')}<div class="lt"><b>${esc(pl.name)}</b><span>${esc(p.title)} · ${esc(p.method)}</span></div><span class="tag ok">€${fmtE(p.amount)}</span></button>`}).join('')}</div>`:''}
@@ -1601,7 +1628,11 @@ SCREENS.aPrices=()=>{
     <div class="grp-h">Разовое посещение</div>
     <div class="f2 f-group">${f('pS60','60 минут, €',PRICES.s60)}${f('pS90','90 минут, €',PRICES.s90)}</div>
     <div class="grp-h">Постоянное место, в месяц</div>
+    <div class="fs13 muted" style="margin:0 4px 6px">1 раз в неделю</div>
     <div class="f2 f-group">${f('pM60','60 минут, €',PRICES.m60)}${f('pM90','90 минут, €',PRICES.m90)}</div>
+    <div class="fs13 muted" style="margin:10px 4px 6px">Несколько групп по 60 минут в неделю (сумма за месяц)</div>
+    <div class="f2 f-group">${f('pM60x2','2 раза в неделю, €',PRICES.m60x2)}${f('pM60x3','3 раза в неделю, €',PRICES.m60x3)}</div>
+    <div class="fs13 muted" style="margin:6px 4px 0;line-height:1.4">Первая группа — по цене «1 раз в неделю», каждая следующая — разница: сейчас €${PRICES.m60} → €${PRICES.m60x2-PRICES.m60} → €${PRICES.m60x3-PRICES.m60x2}.</div>
     <div class="list plain mt8"><div class="li"><div class="lt"><b>Применить ко всем группам</b><span>Обновить цены в ${n} ${plural(n,'группе','группах','группах')}</span></div><label class="switch"><input type="checkbox" id="pAll" checked><span></span></label></div></div>
     <div class="note mt12">${ic('info')}<div>Разовые цены действуют для новых записей сразу — уже оплаченные не меняются. Абонементы — со следующего периода оплаты. Игроки получат уведомление об изменении цен.</div></div>
     <button class="btn pri mt16" data-a="savePrices">Сохранить цены</button>
@@ -1632,7 +1663,7 @@ SCREENS.aMsg=()=>{
     <button class="btn pri mt16" data-a="msgSend" ${uids.length?'':'disabled'}>${ic('bell',18)}Отправить ${uids.length} ${plural(uids.length,'игроку','игрокам','игрокам')}</button>
     ${sent.length?`<div class="sec-t"><h3>Отправленные</h3></div>${sent.map(z=>{const yes=Object.values(z.rsvp).filter(v=>v==='yes').length,no=Object.values(z.rsvp).filter(v=>v==='no').length;const rd=Math.min(z.toUids.length,Object.keys(z.read).length+Math.round(z.toUids.length*0.6));const zx=z.kind==='spot'&&instById(z.inst);const booked=zx?D.bookings.filter(b=>b.inst===zx.id&&!b.cancelled&&z.toUids.includes(b.uid)).length:0;
       return `<div class="msg"><div class="between"><b>${esc(z.title)}</b><span class="fs13 muted">${dShort(pYmd(z.at))}</span></div><div class="fs13 muted">${esc(z.aud||'Все игроки')} · ${z.toUids.length} получателей · прочитали ${rd}</div>
-        ${z.kind==='event'?`<div class="row mt8"><span class="tag ok">${ic('check')}Будут: ${yes}</span><span class="tag">Не смогут: ${no}</span><span class="tag">Нет ответа: ${z.toUids.length-yes-no}</span></div><div class="fs13 muted mt8">${Object.entries(z.rsvp).filter(([,v])=>v==='yes').map(([u])=>esc(player(u).name)).join(', ')}</div>`:''}
+        ${z.kind==='event'?`<div class="row mt8" style="flex-wrap:wrap"><button class="tag ok" data-a="rsvpOpen" data-id="${z.id}" data-v="yes">${ic('check')}Будут: ${yes} ›</button><button class="tag" data-a="rsvpOpen" data-id="${z.id}" data-v="no">Не смогут: ${no} ›</button><button class="tag" data-a="rsvpOpen" data-id="${z.id}" data-v="none">Нет ответа: ${z.toUids.length-yes-no} ›</button></div><div class="fs13 muted mt8">Нажмите, чтобы увидеть список</div>`:''}
         ${z.kind==='spot'?`<div class="row mt8"><span class="tag ${booked?'ok':''}">Записались: ${booked}</span>${zx?`<span class="tag">${zx.left>0?'места ещё есть':'мест больше нет'}</span>`:''}</div>`:''}</div>`}).join('')}`:''}
   </div>`;
 };
@@ -1699,12 +1730,12 @@ function sheet(){
     const opt=s.opt||'single';const bal=balanceH();const q=creditQuote(t);const extraPay=s.extra||'card';
     let method=s.method||'card';if(method==='credit'&&(!bal||opt==='perm'))method='card';
     const pb=st0?monthBill(t,uid(),st0.start.getFullYear(),st0.start.getMonth(),ymd(st0.start)):null;
-    const amount=opt==='perm'?(pb?pb.amount:t.month):t.price;
+    const amount=opt==='perm'?(pb?pb.amount:mpOf(t)):t.price;
     return hd('Запись на тренировку')+`<div class="sh-b">
       <div class="card" style="margin-bottom:14px"><b>${esc(t.title)}</b><div class="muted fs14">${longDay(x.start)}, ${hm(x.start)} · ${esc(coach(t.coach).short)}</div><div class="muted fs13 mt8">${ic('pin',14)} ${VENUE.full}, ${VENUE.addr} · ${esc(t.court)}</div></div>
       <div class="grp-h">Формат</div>
       <button class="opt ${opt==='single'?'on':''} ${x.left>0||us.offerS?'':'dis'}" data-a="bOpt" data-v="single"><span class="rd"></span><span class="ot"><b>Разовое посещение</b><p>${x.left>0||us.offerS?`Только ${dShort(x.start)}. Отмена бесплатно за 12 часов.`:`На ${dShort(x.start)} мест нет`}</p></span><span class="op">${eur(t.price)}</span></button>
-      ${t.month?`<button class="opt ${opt==='perm'?'on':''} ${canPerm?'':'dis'}" data-a="bOpt" data-v="perm"><span class="rd"></span><span class="ot"><b>Постоянное место</b><p>${canPerm?`Место закреплено за вами ${WDA[t.weekday]} в ${t.time}. Оплата по календарным месяцам.`:'Все постоянные места заняты'}</p>${canPerm&&pb?`<p style="color:var(--text);margin-top:6px">${ic('card',14)} Сейчас — <b>€${fmtE(pb.amount)}</b> за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}${pb.lateJoin&&pb.amount<t.month?` по разовой цене €${fmtE(t.price)}`:''} до конца ${MG[st0.start.getMonth()]} (${pb.dates.map(ds=>pYmd(ds).getDate()).join(', ')}), дальше €${fmtE(t.month)} за каждый месяц.</p>`:''}${canPerm?`<p style="color:var(--text);margin-top:6px">${ic('cal',14)} ${later?(()=>{const fb=fullBefore(t,st0,x.start);return `<b>На ${fb.map(z=>dShort(z.start)).join(', ')} мест нет — постоянное место можно занять с ${fromDay(st0.start)}.</b>${x.left>0?` На ${dShort(x.start)} можно записаться разово.`:''}`})():`Начало — <b>${longDay(st0.start).toLowerCase()}</b>`}</p>`:''}</span><span class="op">€${fmtE(t.month)}<small class="muted" style="font-weight:500;font-size:12px">/мес</small></span></button>`:''}
+      ${t.month?`<button class="opt ${opt==='perm'?'on':''} ${canPerm?'':'dis'}" data-a="bOpt" data-v="perm"><span class="rd"></span><span class="ot"><b>Постоянное место</b><p>${canPerm?`Место закреплено за вами ${WDA[t.weekday]} в ${t.time}. Оплата по календарным месяцам.`:'Все постоянные места заняты'}</p>${canPerm&&opt==='perm'?tierNote(t):''}${canPerm&&pb?`<p style="color:var(--text);margin-top:6px">${ic('card',14)} Сейчас — <b>€${fmtE(pb.amount)}</b> за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}${pb.lateJoin&&pb.amount<mpOf(t)?` по разовой цене €${fmtE(t.price)}`:''} до конца ${MG[st0.start.getMonth()]} (${pb.dates.map(ds=>pYmd(ds).getDate()).join(', ')}), дальше €${fmtE(mpOf(t))} за каждый месяц.</p>`:''}${canPerm?`<p style="color:var(--text);margin-top:6px">${ic('cal',14)} ${later?(()=>{const fb=fullBefore(t,st0,x.start);return `<b>На ${fb.map(z=>dShort(z.start)).join(', ')} мест нет — постоянное место можно занять с ${fromDay(st0.start)}.</b>${x.left>0?` На ${dShort(x.start)} можно записаться разово.`:''}`})():`Начало — <b>${longDay(st0.start).toLowerCase()}</b>`}</p>`:''}</span><span class="op">€${fmtE(mpOf(t))}<small class="muted" style="font-weight:500;font-size:12px">/мес</small></span></button>`:''}
       ${t.price>0||opt==='perm'?`<div class="grp-h">Оплата</div>
       ${bal?`<button class="opt ${method==='credit'?'on':''} ${opt==='perm'?'dis':''}" data-a="bMethod" data-v="credit"><span class="rd"></span><span class="ot"><b>Часами отыгрыша</b><p>${opt==='perm'?'Отыгрыши тратятся только на разовые занятия':q.extra?`Нужно ${fmtH(q.need)}, на балансе ${fmtH(bal)} — спишем ${fmtH(q.useH)}, остаток доплатите`:`Спишется ${fmtH(q.need)} из ${fmtH(bal)}`}</p></span><span class="op" style="color:var(--pri)">${opt==='perm'?'':q.extra?`+€${fmtE(q.extra)}`:'€0'}</span></button>
       ${method==='credit'&&q.extra?`<div class="card" style="margin:-2px 0 8px;padding:12px 14px"><div class="fs14 b">Доплата €${fmtE(q.extra)} за ${fmtH(q.need-q.useH)}</div><div class="chips wrap mt8"><button class="chip ${extraPay==='card'?'on':''}" data-a="bExtra" data-v="card">${ic('card')}Картой сейчас</button><button class="chip ${extraPay==='cash'?'on':''}" data-a="bExtra" data-v="cash">${ic('cash')}Наличными на месте</button></div></div>`:''}`:''}
@@ -1812,7 +1843,7 @@ function sheet(){
       ${sel?`<div class="card row">${av(sel.name,colorOf(sel.id),'')}<div style="flex:1"><b>${esc(sel.name)}</b><div class="fs13 muted">NTRP ${fmtR(eff(sel))}</div></div><button class="btn ghost sm" data-a="addPlPick" data-id="">Другой</button></div>
         <div class="grp-h">Куда добавить</div>
         <button class="opt ${mode==='single'?'on':''} ${x.left>0||offS?'':'dis'}" data-a="addPlMode" data-v="single"><span class="rd"></span><span class="ot"><b>Разово на это занятие</b><p>${x.left>0||offS?`${dShort(x.start)} · ${eur(t.price)}`:'Мест на это занятие нет'}</p></span></button>
-        <button class="opt ${mode==='perm'?'on':''} ${canPerm?'':'dis'}" data-a="addPlMode" data-v="perm"><span class="rd"></span><span class="ot"><b>Постоянное место в группе</b><p>${canPerm?`С ${dShort(pst.start)}${pfb.length?` (на ${pfb.map(z=>dShort(z.start)).join(', ')} мест нет)`:''}, ${WDA[t.weekday]} · €${fmtE(pb.amount)} до конца ${MG[pst.start.getMonth()]}, далее €${fmtE(t.month)}/мес`:t.month&&x.permFree>0?'Нет даты, с которой есть места на всех занятиях':'Постоянных мест нет'}</p></span></button>
+        <button class="opt ${mode==='perm'?'on':''} ${canPerm?'':'dis'}" data-a="addPlMode" data-v="perm"><span class="rd"></span><span class="ot"><b>Постоянное место в группе</b><p>${canPerm?`С ${dShort(pst.start)}${pfb.length?` (на ${pfb.map(z=>dShort(z.start)).join(', ')} мест нет)`:''}, ${WDA[t.weekday]} · €${fmtE(pb.amount)} до конца ${MG[pst.start.getMonth()]}, далее €${fmtE(mpOf(t,s.pid))}/мес`:t.month&&x.permFree>0?'Нет даты, с которой есть места на всех занятиях':'Постоянных мест нет'}</p></span></button>
         <div class="grp-h">Оплата</div>
         <div class="chips wrap"><button class="chip ${!s.paid?'on':''}" data-a="addPlPaid" data-v="0">${ic('cash')}Оплатит на месте</button><button class="chip ${s.paid==='cash'?'on':''}" data-a="addPlPaid" data-v="cash">Оплатил наличными</button><button class="chip ${s.paid==='terminal'?'on':''}" data-a="addPlPaid" data-v="terminal">Оплатил картой в клубе</button></div>
         <div class="note mt12">${ic('bell')}<div>Игрок получит уведомление${s.paid?' и счёт':''}. ${!s.paid?'Оплата появится в списке «Принять».':''}</div></div>
@@ -1835,6 +1866,11 @@ function sheet(){
       <button class="opt ${s.opt==='now'?'on':''}" data-a="leaveOpt" data-v="now"><span class="rd"></span><span class="ot"><b>С ближайшего занятия</b><p>Место освобождается сразу${h?`, а все оплаченные и не посещённые занятия вернутся на баланс отыгрышей: <b>${fmtH(h)}</b>`:''}.</p></span></button>
       <div class="note mt8">${ic('info')}<div>Если нужен перерыв (отпуск, травма) — лучше «Попросить заморозку»: место останется за вами.</div></div>
       <button class="btn danger mt16" data-a="doLeave">Отказаться ${s.opt==='month'?'со следующего месяца':'с ближайшего занятия'}</button></div>`;}
+  case 'req':{const r=D.requests.find(z=>z.id===s.id);return hd('Запрос')+`<div class="sh-b">${r?reqCard(r):'<div class="card muted fs14">Запрос уже обработан</div>'}</div>`}
+  case 'rsvpList':{const m=D.messages.find(z=>z.id===s.id);const f=s.f||'yes';const grp={yes:m.toUids.filter(u=>m.rsvp[u]==='yes'),no:m.toUids.filter(u=>m.rsvp[u]==='no'),none:m.toUids.filter(u=>!m.rsvp[u])};const list=grp[f].map(player).filter(Boolean);
+    return hd(m.title)+`<div class="sh-b"><div class="fs14 muted" style="margin:-4px 0 12px">${fromDay(pYmd(m.event.date))}, ${m.event.time} · ${esc(m.event.place)}</div>
+      <div class="seg">${[['yes','Будут'],['no','Не смогут'],['none','Нет ответа']].map(([k,l])=>`<button class="${f===k?'on':''}" data-a="rsvpF" data-v="${k}">${l} · ${grp[k].length}</button>`).join('')}</div>
+      <div class="list mt12" id="rsvpL">${list.length?list.map(p=>`<div class="li">${av(p.name,colorOf(p.id),'')}<div class="lt"><b>${esc(p.name)}</b><span>NTRP ${fmtR(eff(p))}${p.phone?' · '+esc(p.phone):''}</span></div></div>`).join(''):'<div class="li muted fs14">Никого</div>'}</div></div>`}
   case 'deact':case 'delUser':case 'delMe':{const pid=s.name==='delMe'?uid():s.id;const pl=player(pid);const im=userImpact(pid);const del=s.name!=='deact';
       return hd(s.name==='delMe'?'Удалить профиль':del?'Удалить пользователя':'Деактивировать')+`<div class="sh-b">
       <div class="card row">${av(pl.name,colorOf(pl.id),'')}<div><b>${esc(pl.name)}</b><div class="fs13 muted">${esc(pl.phone||'')}</div></div></div>
@@ -1911,7 +1947,7 @@ const CONCEPT=`
 <h5>Уровень и доступ</h5><ul><li>Админ может задать <b>скрытый рейтинг</b>: игрок видит свой результат теста, а доступ считается по скрытому.</li><li>Тренер предлагает изменение — админ подтверждает. Игрок может запросить допуск в группу выше.</li></ul>
 <h5>Запись и оплата</h5><ul><li>Игрок видит только, есть ли место — без списка участников и счётчиков. Состав видят тренер и администратор.</li><li><b>Разово</b>: €30 за час, €45 за 1,5 часа — картой в приложении или наличными на месте.</li><li><b>Постоянное место</b> (если есть в группе) — раз в месяц, картой в приложении или наличными на месте. Если ближайшее занятие заполнено, игрок сразу видит, с какой даты начнёт ходить.</li><li>Цены задаёт администратор («Тренировки» → «Цены»): разово и абонемент для 60 и 90 минут, с применением ко всем группам.</li><li>За 3 дня до даты оплаты на главной появляется сумма и кнопка «Оплатить».</li><li>«Не приду» освобождает место для разовой записи.</li></ul>
 <h5>Отыгрыши (в часах)</h5><ul><li>Оплатил и отменил не позднее чем за 12 часов (разовая запись или «Не приду» в своей группе) → длительность занятия возвращается на баланс: +1 ч или +1,5 ч.</li><li>Часы действуют 60 дней и списываются при записи. Не хватает — остаток доплачивается картой сразу или наличными на месте (€30 за час).</li><li>Если занятие отменяет школа — часы получают все оплатившие. Админ может начислить часы вручную.</li></ul>
-<h5>Счета</h5><ul><li>После каждой оплаты (карта, абонемент, наличные у тренера) клиенту доступен счёт: номер, дата, услуга, сумма, способ оплаты, списанные часы отыгрыша. PDF и отправка на e-mail.</li><li>Наличные: счёт создаётся при записи и отмечается оплаченным, когда тренер или администратор подтверждает получение денег.</li><li>У администратора отдельная вкладка «Оплаты»: кто и сколько не оплатил, все полученные оплаты с фильтром по способу (в приложении, наличные, карта в клубе, перевод) и итоги месяца. Кнопка «Принять» — внести оплату, сделанную в клубе.</li><li>Администратор видит список «Ожидают оплаты» (разовые на месте, доплаты, абонементы) и отмечает оплату наличными, переводом или картой в клубе — у игрока пропадает напоминание и появляется счёт.</li></ul>
+<h5>Счета</h5><ul><li>Счёт формируется только при оплате через приложение: номер, дата, услуга, сумма, способ оплаты, списанные часы отыгрыша. PDF и отправка на e-mail.</li><li>Наличные и карта в клубе — кассовый чек из кассового аппарата; перевод — по счёту, который школа выставила вне приложения. В приложении такая оплата просто отмечается, повторный счёт не создаётся.</li><li>Абонемент: 60 мин 1 раз в неделю — €120, 2 раза — €230, 3 раза — €330; 90 мин — €180. Тарифы меняются в «Цены и тарифы».</li><li>У администратора отдельная вкладка «Оплаты»: кто и сколько не оплатил, все полученные оплаты с фильтром по способу (в приложении, наличные, карта в клубе, перевод) и итоги месяца. Кнопка «Принять» — внести оплату, сделанную в клубе.</li><li>Администратор видит список «Ожидают оплаты» (разовые на месте, доплаты, абонементы) и отмечает оплату наличными, переводом или картой в клубе — у игрока пропадает напоминание и появляется счёт.</li></ul>
 <h5>Заморозка места</h5><ul><li>По просьбе ученика (отпуск, травма) админ замораживает место в группе на выбранные даты: начало и окончание (быстрый выбор — 2 недели, месяц, 2 месяца; максимум 90 дней).</li><li>За период заморозки абонемент не списывается; место остаётся за учеником, после возвращения он продолжает ходить в группу.</li><li>Пока ученика нет, его место открыто для разовой записи других игроков.</li><li>Ученик может отправить запрос на заморозку прямо из приложения.</li></ul>
 <h5>Уведомления и мероприятия</h5><ul><li>Админ отправляет push всем, по уровням или игрокам конкретного тренера: информацию, свободное место с кнопкой «Записаться» или мероприятие с кнопками «Буду / Не смогу» и счётчиком ответов.</li><li>Нерабочие дни (день или период): тренировки отменяются автоматически, игроки получают уведомление, оплаченные занятия переходят в отыгрыши.</li><li>Лист ожидания на разовое занятие и на постоянное место; при освобождении — уведомление, место держится 2 часа.</li></ul>
 <h5>Расписание</h5><ul><li>Список и календарь.</li><li>Группировка: день, тренер, уровень группы, длительность, время суток.</li><li>Сортировка и фильтры по тренеру, уровню, длительности, времени.</li></ul>
@@ -1926,6 +1962,13 @@ const A={
   go:e=>{if(e.dataset.n==='aPlayer')S.hiddenDraft=null;go(e.dataset.n,{id:e.dataset.id})},
   openTr:e=>go('training',{id:e.dataset.id}),
   openTpl:e=>go('tplView',{id:e.dataset.id}),
+  skipSplash:()=>{SPLASH=false;render()},
+  openMsg:e=>{const u=inboxId();const m=D.messages.find(z=>z.id===e.dataset.id);if(!m)return;m.read[u]=true;const l=m.link;
+    if(l&&l.req){if(D.requests.some(r=>r.id===l.req))openSheet('req',{id:l.req});else toast('Запрос уже обработан');return}
+    if(l&&l.n&&(!l.id||l.n!=='cSession'||instById(l.id))){go(l.n,l.id?{id:l.id}:{});return}render()},
+  readAll:()=>{const u=inboxId();myMsgs(u).forEach(m=>m.read[u]=true);render()},
+  rsvpOpen:e=>openSheet('rsvpList',{id:e.dataset.id,f:e.dataset.v}),
+  rsvpF:e=>{S.sheet.f=e.dataset.v;render()},
   closeSheet:()=>closeSheet(),
   sheet:e=>openSheet(e.dataset.n,e.dataset.id?{id:e.dataset.id}:{}),
   toast:e=>toast(e.dataset.t),
@@ -1971,7 +2014,7 @@ const A={
       doBook(x,'single','credit',{useH:q.useH,extra:q.extra,extraPay:q.extra?'cash':null});return}
     if(opt==='single'&&(method==='cash'||t.price===0)){doBook(x,'single',method==='cash'?'cash':'free');return}
     const st0=startInst(t)||x;const pb=monthBill(t,uid(),st0.start.getFullYear(),st0.start.getMonth(),ymd(st0.start));
-    openSheet('pay',{title:opt==='perm'?`Постоянное место: ${t.title}`:`Разовое: ${t.title}`,sub:opt==='perm'?`${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}, далее €${fmtE(t.month)}/мес`:`${longDay(x.start)}, ${hm(x.start)}`,amount:opt==='perm'?pb.amount:t.price,recurring:opt==='perm',after:{k:'book',id:x.id,opt}});
+    openSheet('pay',{title:opt==='perm'?`Постоянное место: ${t.title}`:`Разовое: ${t.title}`,sub:opt==='perm'?`${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}, далее €${fmtE(mpOf(t))}/мес`:`${longDay(x.start)}, ${hm(x.start)}`,amount:opt==='perm'?pb.amount:t.price,recurring:opt==='perm',after:{k:'book',id:x.id,opt}});
   },
   payM:e=>{S.sheet.m=e.dataset.v;render()},
   payDo:()=>{const sh=S.sheet;sh.busy=true;render();setTimeout(()=>{const a=sh.after;const amt=sh.amount;const title=sh.title;const m=sh.m==='wallet'?'Apple Pay':'Карта •••• 4242';
@@ -1986,7 +2029,7 @@ const A={
   payRenew:()=>{const ri=renewInfo();openSheet('pay',{title:`Абонемент за ${ri.month}: ${ri.t.title}`,sub:`${ri.bill.active.length} ${plural(ri.bill.active.length,'занятие','занятия','занятий')}: ${ri.bill.active.map(ds=>dShort(pYmd(ds))).join(', ')}`,amount:ri.amount,after:{k:'renew',tpl:ri.t.id}})},
   cancelBooking:e=>{const x=instById(e.dataset.id);const b=D.bookings.find(b=>b.inst===x.id&&b.uid===uid()&&!b.cancelled);const back=refundHours(x,b);
     openSheet('confirm',{title:'Отменить запись?',text:!earlyEnough(x)?'До начала меньше 12 часов — по правилам школы часы на баланс не возвращаются.':back?`До начала больше 12 часов — <b>${fmtH(back)}</b> вернётся на баланс отыгрышей. Их можно потратить на другую тренировку в течение ${CREDIT_DAYS} дней.`:'Место освободится для других игроков. Оплата на месте не взималась.',yes:'doCancel',id:x.id,yesLabel:'Отменить запись',danger:true})},
-  doCancel:e=>{const x=instById(e.dataset.id);const b=D.bookings.find(b=>b.inst===x.id&&b.uid===uid()&&!b.cancelled);if(!b)return;staffMsg([x.t.coach],'Отмена записи',`${me().name} отменил(а) запись: «${x.t.title}», ${dShort(x.start)} ${hm(x.start)}.`);const back=refundHours(x,b);b.cancelled=true;S.sheet=null;
+  doCancel:e=>{const x=instById(e.dataset.id);const b=D.bookings.find(b=>b.inst===x.id&&b.uid===uid()&&!b.cancelled);if(!b)return;staffMsg([x.t.coach],'Отмена записи',`${me().name} отменил(а) запись: «${x.t.title}», ${dShort(x.start)} ${hm(x.start)}.`,{link:{n:'cSession',id:x.id}});const back=refundHours(x,b);b.cancelled=true;S.sheet=null;
     const inv=invOfBooking(b);if(inv&&!inv.paid)inv.cancelled=true;if(inv&&back&&earlyEnough(x))inv.refundH=back;
     if(back&&earlyEnough(x)){refundAlloc(b.alloc);const moneyH=back-(b.useH||0);if(moneyH>0)addCredit(x,uid(),'Отмена записи',moneyH);toast(`Запись отменена · +${fmtH(back)}, на балансе ${fmtH(balanceH())}`)}else toast('Запись отменена')},
   toggleAbsent:e=>{const x=instById(e.dataset.id);const i=D.absences.findIndex(a=>a.inst===x.id&&a.uid===uid());
@@ -2001,7 +2044,7 @@ const A={
   freezeOpen:e=>openSheet('freeze',{mode:'admin',tpl:e.dataset.tpl,pid:e.dataset.pid,...fzDefaults(e.dataset.tpl)}),
   fzLen:e=>{S.sheet.to=ymd(addD(pYmd(S.sheet.from),+e.dataset.v-1));render()},
   doFreeze:()=>{const s=S.sheet;const p=player(s.pid);const t=tpl(s.tpl);
-    if(s.mode==='req'){const note=(document.getElementById('fzNote')||{}).value||'—';staffMsg(['a1'],'Новый запрос на заморозку',`${me().name}: «${tpl(s.tpl).title}», ${fzRange(s.from,s.to)}.`);D.requests.unshift({id:'r'+Date.now(),type:'freeze',pid:s.pid,tpl:s.tpl,from:s.from,to:s.to,note});S.sheet=null;toast('Запрос отправлен — администратор ответит в приложении');return}
+    if(s.mode==='req'){const note=(document.getElementById('fzNote')||{}).value||'—';const rid='r'+Date.now();D.requests.unshift({id:rid,type:'freeze',pid:s.pid,tpl:s.tpl,from:s.from,to:s.to,note});staffMsg(['a1'],'Новый запрос на заморозку',`${me().name}: «${tpl(s.tpl).title}», ${fzRange(s.from,s.to)}.`,{link:{req:rid}});S.sheet=null;toast('Запрос отправлен — администратор ответит в приложении');return}
     D.freezes=D.freezes.filter(f=>!(f.tpl===s.tpl&&f.uid===s.pid));D.freezes.push({tpl:s.tpl,uid:s.pid,from:s.from,to:s.to});
     D.requests=D.requests.filter(r=>!(r.type==='freeze'&&r.pid===s.pid&&r.tpl===s.tpl));S.sheet=null;toast(`Место ${p.name.split(' ')[0]} в «${t.title}» заморожено ${fzRange(s.from,s.to)}`)},
   unfreeze:e=>{D.freezes=D.freezes.filter(f=>!(f.tpl===e.dataset.tpl&&f.uid===e.dataset.pid));toast('Заморозка снята — игрок снова ходит в группу')},
@@ -2014,7 +2057,7 @@ const A={
     t.until=t.until||{};t.until[u]=until;if(ms)ms.until=until;
     sendMsg({kind:'info',title:'Отказ от постоянного места',text:`${me().name} отказался(-ась) от места в «${t.title}» с ${dShort(addD(pYmd(until),1))}.`,toUids:['a1',t.coach],staff:true});
     S.sheet=null;toast(s.opt==='now'?`Место освобождено с ${dShort(addD(pYmd(until),1))}${h?` · ${fmtH(h)} на балансе отыгрышей`:''}`:`Вы ходите до конца ${MG[T0.getMonth()]}, со следующего месяца списаний не будет${h?` · уже оплаченное вернулось: ${fmtH(h)}`:''}`)},
-  reqAccess:e=>{const t=tpl(e.dataset.id);if(D.requests.some(r=>r.type==='access'&&r.pid===uid()&&r.tpl===t.id)){toast('Запрос уже отправлен — ждём ответа тренера');return}staffMsg(['a1',t.coach],'Новый запрос на допуск',`${me().name} просит допуск в «${t.title}».`);D.requests.push({id:'r'+Date.now(),type:'access',pid:uid(),tpl:t.id,note:`Хочу попробовать «${t.title}»`});toast('Запрос отправлен. Ответ придёт push-уведомлением')},
+  reqAccess:e=>{const t=tpl(e.dataset.id);if(D.requests.some(r=>r.type==='access'&&r.pid===uid()&&r.tpl===t.id)){toast('Запрос уже отправлен — ждём ответа тренера');return}const rid='r'+Date.now();D.requests.push({id:rid,type:'access',pid:uid(),tpl:t.id,note:`Хочу попробовать «${t.title}»`});staffMsg(['a1',t.coach],'Новый запрос на допуск',`${me().name} просит допуск в «${t.title}».`,{link:{req:rid}});toast('Запрос отправлен. Ответ придёт push-уведомлением')},
   wlJoin:e=>{const type=e.dataset.type,ref=e.dataset.id;if(!wlOf(type,ref))D.waitlist.push({id:'w'+Date.now(),uid:uid(),type,ref,at:Date.now()});const w=wlOf(type,ref);toast(`Вы в листе ожидания (№${wlPos(w)}). Сообщим push-уведомлением, место будет держаться 2 часа`)},
   wlLeave:e=>{D.waitlist=D.waitlist.filter(w=>w.id!==e.dataset.id);toast('Вы вышли из листа ожидания')},
   ntrpHelp:()=>openSheet('ntrp'),
@@ -2093,8 +2136,8 @@ const A={
   attAll:e=>{const x=instById(e.dataset.inst);const m=D.attendance[x.id]=D.attendance[x.id]||{};participants(x).forEach(p=>m[p.id]=true);render()},
   memCash:e=>{const mm=D.memberships.find(m=>m.inv===e.dataset.id);mm.paid=true;const inv=D.payments.find(p=>p.id===e.dataset.id);if(inv){inv.paid=true;inv.method='Наличные';if(S.role==='admin')inv.markedBy='admin'}toast('Оплата абонемента наличными отмечена — выдайте кассовый чек')},
   savePrices:()=>{const v=id=>intE(document.getElementById(id).value);
-    const np={s60:v('pS60'),s90:v('pS90'),m60:v('pM60'),m90:v('pM90')};if(Object.values(np).some(x=>!x)){toast('Укажите все цены');return}
-    Object.assign(PRICES,np,{s120:np.s60*2,m120:Math.round(np.m60*5/3)});
+    const np={s60:v('pS60'),s90:v('pS90'),m60:v('pM60'),m90:v('pM90'),m60x2:v('pM60x2'),m60x3:v('pM60x3')};if(Object.values(np).some(x=>!x)){toast('Укажите все цены');return}
+    Object.assign(PRICES,np,{s120:np.s60*2,m120:np.m60*2});
     const all=document.getElementById('pAll').checked;if(all)D.tpls.forEach(t=>{t.price=priceFor(t.dur);t.month=monthFor(t.dur)});
     S.stack.pop();S.anim='pop';toast(`Цены обновлены${all?' во всех группах':' для новых групп'}: разово €${fmtE(np.s60)} / €${fmtE(np.s90)}, абонемент €${fmtE(np.m60)} / €${fmtE(np.m90)}`)},
   recvOpen:e=>openSheet('recv',{m:'cash',pid:e.dataset.pid||'p1',what:'abon',sel:[]}),
@@ -2116,8 +2159,8 @@ const A={
       if(newDates.length){const tot=newDates.reduce((a,x)=>a+x.t.price,0);addInvoice({uid:pl.id,kind:'single',sessions:newDates.map(x=>ymd(x.start)),title:`Разовые: ${newDates.map(x=>dShort(x.start)).join(', ')}`,lines:[{name:`Разовые тренировки (${newDates.length})`,detail:newDates.map(x=>`${dShort(x.start)} ${hm(x.start)} ${x.t.title}`).join('; '),sum:tot}],amount:tot,method,markedBy:'admin',by})}
       msg=`разовые: ${ids.map(id=>dShort(instById(id).start)).join(', ')} · €${fmtE(sum)}`}
     else{const amt=intE(s.amt);const title=(s.title||'').trim();if(!title||!amt){toast('Укажите, за что, и сумму');return}addInvoice({uid:pl.id,kind:'other',title,lines:[{name:title,detail:`Оплата в клубе · ${VENUE.name}`,sum:amt}],amount:amt,method,markedBy:'admin',by});msg=`${title} · €${fmtE(amt)}`}
-    sendMsg({kind:'info',title:'Оплата получена',text:`${by} принял(а) оплату: ${msg} (${method.toLowerCase()}). ${isReceipt({method})?'Кассовый чек выдан на месте.':'Счёт — в разделе «Счета».'}`,toUids:[pl.id]});
-    S.sheet=null;toast(`${pl.name.split(' ')[0]}: ${msg} — отмечено${isReceipt({method})?', выдайте кассовый чек':', игрок получил счёт'}`)},
+    sendMsg({kind:'info',title:'Оплата получена',text:`${by} принял(а) оплату: ${msg} (${method.toLowerCase()}). ${isTransfer({method})?'Оплата по счёту школы.':'Кассовый чек выдан на месте.'}`,toUids:[pl.id]});
+    S.sheet=null;toast(`${pl.name.split(' ')[0]}: ${msg} — отмечено${isTransfer({method})?' (перевод по счёту школы)':', выдайте кассовый чек'}`)},
   aPaySeg:e=>{S.aPaySeg=e.dataset.v;render()},
   aPayF:e=>{S.aPayF=e.dataset.v;render()},
   doDeact:e=>{const p=player(e.dataset.id);p.inactive=true;S.sheet=null;staffMsg([],'Деактивировал(а) пользователя',p.name);toast(`${p.name.split(' ')[0]}: аккаунт деактивирован`)},
@@ -2135,7 +2178,7 @@ const A={
     else if(kind==='B'){D.cashGot[ref]=true;const b=D.bookings.find(b=>b.id===ref);inv=invOfBooking(b);if(inv){inv.paid=true;inv.method=method;inv.markedBy='admin'}}
     else if(kind==='A'){const ri=(()=>{const prev=S.role;const r=(S.role='player',renewInfo());S.role=prev;return r})();S.renewPaid=true;inv=renewInvoice(ri,method,{markedBy:'admin',by:whoAmI()})}
     else{const sd=D.debts.find(x=>x.id===ref);D.debts=D.debts.filter(x=>x!==sd);inv=addInvoice({uid:sd.pid,title:sd.title,lines:sd.lines,amount:sd.amount,method,markedBy:'admin'})}
-    S.sheet=null;toast(`${pl.name.split(' ')[0]}: оплата €${fmtE(d.amount)} отмечена (${method.toLowerCase()}) ${isReceipt({method})?' — выдайте кассовый чек':' — счёт отправлен игроку'}`)},
+    S.sheet=null;toast(`${pl.name.split(' ')[0]}: оплата €${fmtE(d.amount)} отмечена (${method.toLowerCase()}) ${isTransfer({method})?' — перевод по счёту школы':' — выдайте кассовый чек'}`)},
   cashGot:e=>{D.cashGot[e.dataset.id]=true;const b=D.bookings.find(b=>b.id===e.dataset.id);const inv=invOfBooking(b);if(inv){inv.paid=true;inv.method='Наличные';if(S.role==='admin')inv.markedBy='admin'}toast('Оплата наличными отмечена — выдайте кассовый чек')},
   cancelSession:e=>openSheet('confirm',{title:'Отменить занятие?',text:'Все участники получат push-уведомление, а оплатившим (картой, абонементом или отыгрышем) длительность занятия вернётся на баланс отыгрышей.',yes:'doCancelSession',id:e.dataset.id,yesLabel:'Отменить занятие',danger:true}),
   doCancelSession:e=>{const x=instById(e.dataset.id||S.sheet.id);const who=whoAmI();
@@ -2147,7 +2190,7 @@ const A={
   sugSend:e=>{const note=document.getElementById('sugNote').value;if((S.sheet.mode||'visible')==='visible'){const p=player(e.dataset.id);p.self=S.sheet.v;
       sendMsg({kind:'info',title:'Ваш уровень обновлён',text:`${coach(S.coachId).name}: ваш уровень теперь NTRP ${fmtR(p.self)} — «${CATS[catOf(p.self)].name}». ${note}`,toUids:[p.id]});staffMsg(['a1'],'Тренер изменил уровень',`${coach(S.coachId).name} изменил(а) уровень ${p.name}: NTRP ${fmtR(p.self)}.`);
       S.sheet=null;toast(`Уровень ${p.name.split(' ')[0]}: NTRP ${fmtR(p.self)} — игрок и админ уведомлены`);return}
-    staffMsg(['a1'],'Новый запрос: уровень',`${coach(S.coachId).name} предлагает скрытый рейтинг ${fmtR(S.sheet.v)} для ${player(e.dataset.id).name}.`);D.requests.unshift({id:'r'+Date.now(),type:'level',from:S.coachId,pid:e.dataset.id,to:S.sheet.v,note:note||'—'});S.sheet=null;toast('Предложение отправлено администратору')},
+    const rid='r'+Date.now();staffMsg(['a1'],'Новый запрос: уровень',`${coach(S.coachId).name} предлагает скрытый рейтинг ${fmtR(S.sheet.v)} для ${player(e.dataset.id).name}.`,{link:{req:rid}});D.requests.unshift({id:rid,type:'level',from:S.coachId,pid:e.dataset.id,to:S.sheet.v,note:note||'—'});S.sheet=null;toast('Предложение отправлено администратору')},
   // admin
   aTrainF:e=>{S.aTrain=e.dataset.v;render()},
   aSeg:e=>{S.aTrainSeg=e.dataset.v;render()},
@@ -2155,9 +2198,14 @@ const A={
   reqYes:e=>{const r=D.requests.find(r=>r.id===e.dataset.id);const p=player(r.pid);
     if(r.type==='freeze'){D.freezes=D.freezes.filter(f=>!(f.tpl===r.tpl&&f.uid===r.pid));D.freezes.push({tpl:r.tpl,uid:r.pid,from:r.from,to:r.to});toast(`Место ${p.name.split(' ')[0]} заморожено ${fzRange(r.from,r.to)} — на это время оно открыто для разовой записи`)}
     else if(r.type==='level'){p.hidden=r.to;toast(`Скрытый рейтинг ${p.name.split(' ')[0]}: ${fmtR(r.to)}`)}
-    else{const t=tpl(r.tpl);p.hidden=Math.max(eff(p),t.lvMin);toast(`${p.name.split(' ')[0]} получил(а) доступ: скрытый рейтинг ${fmtR(p.hidden)}`)}
-    D.requests=D.requests.filter(x=>x!==r);render()},
-  reqNo:e=>{D.requests=D.requests.filter(x=>x.id!==e.dataset.id);toast('Запрос отклонён, игрок получит уведомление')},
+    else{const t=tpl(r.tpl);p.hidden=Math.max(eff(p),t.lvMin);toast(`${p.name.split(' ')[0]} получил(а) доступ в «${t.title}» — игрок получил уведомление`)}
+    if(r.type==='access'){const t=tpl(r.tpl);sendMsg({kind:'info',title:'Доступ в группу открыт',text:`Тренер допустил вас в группу «${t.title}» (${WDA[t.weekday]} в ${t.time}). Можно записываться разово или на постоянное место.`,toUids:[p.id],link:{n:'tplView',id:t.id}})}
+    if(r.type==='freeze'){const t=tpl(r.tpl);sendMsg({kind:'info',title:'Заморозка подтверждена',text:`Место в группе «${t.title}» заморожено ${fzRange(r.from,r.to)}. Занятия в эти даты не оплачиваются, место остаётся за вами.`,toUids:[p.id],link:{n:'tplView',id:t.id}})}
+    D.requests=D.requests.filter(x=>x!==r);if(S.sheet&&S.sheet.name==='req')S.sheet=null;render()},
+  reqNo:e=>{const r=D.requests.find(x=>x.id===e.dataset.id);if(!r)return;const t=tpl(r.tpl);
+    if(r.type==='access')sendMsg({kind:'info',title:'Запрос на допуск отклонён',text:`Пока остаёмся в вашей текущей группе — в «${t.title}» тренер пока не допустил. Можно спросить тренера на занятии, что подтянуть.`,toUids:[r.pid]});
+    if(r.type==='freeze')sendMsg({kind:'info',title:'Заморозка не подтверждена',text:`Запрос на заморозку места в «${t.title}» ${fzRange(r.from,r.to)} отклонён. Свяжитесь с администратором, если нужно обсудить.`,toUids:[r.pid]});
+    D.requests=D.requests.filter(x=>x!==r);if(S.sheet&&S.sheet.name==='req')S.sheet=null;toast(r.type==='level'?'Запрос отклонён':'Запрос отклонён, игрок получил уведомление')},
   saveTpl:e=>{
     const v=id=>document.getElementById(id).value;
     const level=v('eLevel');const title=v('eTitle').trim()||CATS[level].name;const lvMin=CATS[level].min,lvMax=CATS[level].max;
@@ -2238,9 +2286,9 @@ function doBook(x,opt,pay,o={}){
     const pb=monthBill(t,uid(),st0.start.getFullYear(),st0.start.getMonth(),sinceDs);const mo=st0.start.getMonth(),yy=st0.start.getFullYear();
     const inv=addInvoice({kind:'abon',title:`Абонемент за ${MN[mo].toLowerCase()}: ${t.title}`,sessions:pb.dates,period:{from:sinceDs,to:ymd(new Date(yy,mo+1,0))},lines:[{name:`Постоянное место «${t.title}» до конца ${MG[mo]}`,detail:pb.dates.map(ds=>dShort(pYmd(ds))).join(', '),sum:pb.amount}],amount:pb.amount,method:cash?'Наличные на месте':m,paid:!cash});
     D.memberships.push({tpl:t.id,uid:uid(),since:sinceDs,pay:cash?'cash':'card',paid:!cash,inv:inv.id,firstAmount:pb.amount});if(!cash)setAbonPaid(uid(),t.id,yy,mo,inv.id);
-    openSheet('success',{title:'Место за вами!',text:`Постоянное место в «${esc(t.title)}» — ${WDA[t.weekday]} в ${t.time}. <b>Первое занятие — ${longDay(st0.start).toLowerCase()}</b>${st0.id!==x.id?` (на ${dShort(x.start)} мест не было)`:''}. ${cash?`Оплата €${fmtE(pb.amount)} за ${MN[st0.start.getMonth()].toLowerCase()} (${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}) наличными на первом занятии.`:`Оплачено €${fmtE(pb.amount)} за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}.`} Дальше — €${fmtE(t.month)} за каждый календарный месяц, оплата до 1-го числа.${abs.n?` Ваша разовая запись в эту группу вошла в абонемент${abs.h?` — ${fmtH(abs.h)} возвращены на баланс отыгрышей`:''}.`:''}`,inv:inv.id});return}
+    openSheet('success',{title:'Место за вами!',text:`Постоянное место в «${esc(t.title)}» — ${WDA[t.weekday]} в ${t.time}. <b>Первое занятие — ${longDay(st0.start).toLowerCase()}</b>${st0.id!==x.id?` (на ${dShort(x.start)} мест не было)`:''}. ${cash?`Оплата €${fmtE(pb.amount)} за ${MN[st0.start.getMonth()].toLowerCase()} (${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')}) наличными на первом занятии.`:`Оплачено €${fmtE(pb.amount)} за ${pb.dates.length} ${plural(pb.dates.length,'занятие','занятия','занятий')} до конца ${MG[st0.start.getMonth()]}.`} Дальше — €${fmtE(mpOf(t))} за каждый календарный месяц, оплата до 1-го числа.${abs.n?` Ваша разовая запись в эту группу вошла в абонемент${abs.h?` — ${fmtH(abs.h)} возвращены на баланс отыгрышей`:''}.`:''}`,inv:inv.id});return}
   D.waitlist=D.waitlist.filter(w=>!(w.uid===uid()&&w.type==='single'&&w.ref===x.id));
-  staffMsg([t.coach],'Новая запись',`${me().name}: «${t.title}», ${fromDay(x.start)} в ${hm(x.start)} · ${pay==='cash'?'оплата на месте':pay==='credit'?'часами отыгрыша':'оплачено в приложении'}.`);
+  staffMsg([t.coach],'Новая запись',`${me().name}: «${t.title}», ${fromDay(x.start)} в ${hm(x.start)} · ${pay==='cash'?'оплата на месте':pay==='credit'?'часами отыгрыша':'оплачено в приложении'}.`,{link:{n:'cSession',id:x.id}});
   const b={id:'b'+Date.now(),inst:x.id,uid:uid(),pay};
   const line={name:`Разовая тренировка «${t.title}»`,detail:`${longDay(x.start)}, ${hm(x.start)} · ${t.dur} мин · ${VENUE.name}, ${t.court}`,sum:t.price};
   let inv=null,txt='';
